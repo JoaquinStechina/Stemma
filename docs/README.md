@@ -1,31 +1,31 @@
-# Documentación
+# Documentation
 
 ## Stemma
 
-| Documento | Contenido |
+| Document | Contents |
 |---|---|
-| [Guía de Stemma](guia.md) | El panel, cada sección en detalle y problemas frecuentes |
-| [Avisos](avisos.md) | Puerto de depuración, logros de Steam, copias de seguridad |
-| [Desarrollo](desarrollo.md) | Cómo funciona, estructura del código, añadir secciones e idiomas, actualizaciones del juego |
+| [Stemma guide](guide.md) | The panel, every section in detail, and troubleshooting |
+| [Warnings](warnings.md) | Debugging port, Steam achievements, backups |
+| [Development](development.md) | How it works, code structure, adding sections and languages, game updates |
 
-## Mecánicas de Citizen of Rome - Dynasty Ascendant
+## Mechanics of Citizen of Rome - Dynasty Ascendant
 
-Notas sobre cómo funciona el juego por dentro, sacadas de su código (versión **1.6.36**) mientras se desarrollaba Stemma. Sirven para jugar mejor y para mantener Stemma.
+Notes on how the game works internally, taken from its code (version **1.6.36**) while Stemma was being developed. They help you play better and keep Stemma up to date.
 
-| Documento | Contenido |
+| Document | Contents |
 |---|---|
-| [Estrategia](estrategia.md) | Cómo jugar para tener personajes con habilidades altas y una familia rica: pareja y genética, educación, personalidad y oficios, dinero, herencia, salud |
-| [Mecánicas generales](mecanicas-generales.md) | Clase social, escalado de costos, calendario y edad, habilidades, rasgos, multiplicadores, guardado |
-| [Educación](educacion.md) | Etapas (ludus, grammaticus, rhetor, filosofía, aprendiz), opciones y costos, velocidad de aprendizaje, inteligencia, retórica judicial o deliberativa |
-| [Trabajos](trabajos.md) | Oficios mejor pagados, magistraturas, qué oficios benefician a la familia, médico en casa, bonus por oficio compartido, reclutamiento |
-| [Mascotas](mascotas.md) | Para qué sirven, aptitud, vigor y docilidad, aprendizaje, rasgos, precios, especies |
-| [Propiedades y ganado](propiedades.md) | Rendimiento de tierras y animales, límite administrable, penalización por exceso |
-| [Logros](logros.md) | Dónde se guardan, grupos, relación con Steam |
-| [Eventos militares](eventos-militares.md) | La guerra, cómo se escalan los premios de los eventos, árbol de decisiones de los 8 eventos con corona: mejor camino, riesgo de muerte y probabilidad de corona |
+| [Strategy](strategy.md) | How to play to get characters with high skills and a rich family: spouse and genetics, education, personality and trades, money, inheritance, health |
+| [General mechanics](general-mechanics.md) | Social class, cost scaling, calendar and age, skills, traits, multipliers, saving |
+| [Education](education.md) | Stages (ludus, grammaticus, rhetor, philosophy, apprentice), options and costs, learning speed, intelligence, judicial or deliberative rhetoric |
+| [Jobs](jobs.md) | Best-paid trades, magistracies, which trades benefit the family, a physician at home, shared-trade bonus, recruitment |
+| [Pets](pets.md) | What they are for, aptitude, vigor and docility, learning, traits, prices, species |
+| [Properties and livestock](properties.md) | Yield of land and animals, manageable limit, penalty for exceeding it |
+| [Achievements](achievements.md) | Where they are stored, groups, relation to Steam |
+| [Military events](military-events.md) | War, how event rewards scale, decision trees of the 8 crown events: best path, risk of death and chance of a crown |
 
-## Cómo leer estas notas
+## How to read these notes
 
-- Las **fórmulas** se copian tal como están en el código y se explican en palabras. Entre corchetes va el identificador del módulo de webpack donde están (p. ej. `[f0c5]`), para poder volver a comprobarlas si el juego se actualiza.
-- Cuando algo **no se pudo confirmar** (por ejemplo, cada cuánto exacto se procesa un evento), se indica.
-- Los nombres de rasgos, trabajos y propiedades se dejan **en inglés**, como los muestra el juego.
-- Los textos con cifras de dinero, prestigio o influencia son **valores base**: el juego los multiplica según la clase de la familia (ver [Mecánicas generales](mecanicas-generales.md#escalado-de-costos-por-clase)) y, en muchos eventos, según tus ingresos (ver [Eventos militares](eventos-militares.md#cómo-se-escalan-los-premios)).
+- **Formulas** are copied as they appear in the code and explained in words. The webpack module identifier where they live goes in square brackets (e.g. `[f0c5]`), so you can check them again if the game updates.
+- When something **could not be confirmed** (for example, exactly how often an event is processed), it says so.
+- The names of traits, jobs and properties are left **in English**, as the game shows them.
+- Text with amounts of money, prestige or influence gives **base values**: the game multiplies them by the family's class (see [General mechanics](general-mechanics.md#cost-scaling-by-class)) and, in many events, by your income (see [Military events](military-events.md#how-rewards-scale)).

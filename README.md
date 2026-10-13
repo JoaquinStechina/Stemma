@@ -23,7 +23,7 @@ Stemma does **not** turn on the game's mod mode, so game and Steam achievements 
 3. In this folder, run `node stemma.mjs` and leave the window open.
 4. Start the game and load your save. Press **F8** to show or hide the panel.
 
-Something not working? See the [troubleshooting guide](docs/guia.md#problemas-frecuentes).
+Something not working? See the [troubleshooting guide](docs/guide.md#troubleshooting).
 
 ## Before you use it
 
@@ -33,10 +33,8 @@ Something not working? See the [troubleshooting guide](docs/guia.md#problemas-fr
 
 ## Documentation
 
-The documentation is in Spanish.
-
-- [Guide](docs/guia.md): every panel section, the extras and troubleshooting.
-- [Warnings](docs/avisos.md): achievements, backups and the debugging port.
-- [Strategy](docs/estrategia.md): how to build a rich family with strong heirs.
+- [Guide](docs/guide.md): every panel section, the extras and troubleshooting.
+- [Warnings](docs/warnings.md): achievements, backups and the debugging port.
+- [Strategy](docs/strategy.md): how to build a rich family with strong heirs.
 - [Game mechanics](docs/README.md): how the game works under the hood.
-- [Development](docs/desarrollo.md): how Stemma is built.
+- [Development](docs/development.md): how Stemma is built.
