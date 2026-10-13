@@ -16,7 +16,7 @@
 // Los errores de los eventos del trainer no van a console.warn (el mismo bucle).
 //
 // Las partidas guardadas antes usaban eventos 'trainer/<nombre>' y sin el trainer
-// cuelgan el juego al cargarlas. Este archivo no usa require: trainer.mjs también lo
+// cuelgan el juego al cargarlas. Este archivo no usa require: stemma.mjs también lo
 // ejecuta al empezar cada carga de la página (antes que el juego), así esos eventos
 // ya existen cuando el juego carga la partida, y sync() los cambia por la puerta.
 const GATE = { event: 'lifeAndDeath/birth', method: 'preCheckIfAlive' }

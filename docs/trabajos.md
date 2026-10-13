@@ -62,7 +62,7 @@ En cada comprobación, el nivel sube en 1 con probabilidad:
 - `multiplicador_sin_modificadores` es el de arriba sin `job_<oficio>` ni el de ingresos: rasgos y habilidades del oficio.
 - **Cada nivel cuesta más que el anterior** (la probabilidad baja en proporción al nivel), así que llegar a 200 o 300 lleva muchísimo tiempo. La **inteligencia** y las habilidades del oficio lo aceleran mucho. *Ambitious* ×1,25; *Content* ÷1,25.
 - Al llegar al nivel máximo (si es 10 o más) se consigue el logro `topBoss`.
-- La función que fija el nivel lo limita a `[0, nivel_máx]` `[6cf7]`. En el trainer: Familia → Nivel trabajo → **Máx**.
+- La función que fija el nivel lo limita a `[0, nivel_máx]` `[6cf7]`. En Stemma: Familia → Nivel trabajo → **Máx**.
 
 ## Magistraturas y cargos: prestigio e influencia
 
@@ -120,7 +120,7 @@ Los personajes que genera el juego pueden traer, con cierta probabilidad, un mod
 - *Greedy* o administración > 15: gastos de la casa ×0,9–1,0.
 - Con oficio: ±20% en los ingresos de su oficio.
 
-Se ven en el trainer en Multiplicadores → Activos ahora.
+Se ven en Stemma en Multiplicadores → Activos ahora.
 
 ## Desventaja: reclutamiento en guerra `[dab4]`
 

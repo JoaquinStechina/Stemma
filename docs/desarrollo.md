@@ -1,37 +1,37 @@
 # Desarrollo
 
-Cómo está hecho el trainer y cómo ampliarlo.
+Cómo está hecho Stemma y cómo ampliarlo.
 
 ## Cómo funciona
 
-El juego es una app de Electron (JavaScript/Vue). El trainer no toca la memoria del proceso:
+El juego es una app de Electron (JavaScript/Vue). Stemma no toca la memoria del proceso:
 
-1. `trainer.mjs` (Node) se conecta al juego por el protocolo de depuración de Chrome (puerto 9222).
+1. `stemma.mjs` (Node) se conecta al juego por el protocolo de depuración de Chrome (puerto 9222).
 2. Junta el código de `src/` en un solo script y lo ejecuta dentro de la página del juego.
 3. Ese script lee y cambia el estado de Vuex del juego y, cuando existen, usa las funciones internas del juego (rasgos, nivel de trabajo, multiplicadores…), así se aplican sus efectos igual que al jugar.
 
-Si el juego recarga la página, el trainer vuelve a inyectar el panel.
+Si el juego recarga la página, Stemma vuelve a inyectar el panel.
 
 ## Comandos
 
 | Comando | Qué hace |
 |---|---|
-| `node trainer.mjs` | Conecta con el juego e inyecta el panel |
-| `node trainer.mjs --dev` | Además, vuelve a inyectar el panel cada vez que guardas un archivo de `src/` o `locales/` |
-| `node trainer.mjs --check` | Comprueba `src/` y `locales/` (sintaxis, JSON, claves de idioma) sin abrir el juego |
+| `node stemma.mjs` | Conecta con el juego e inyecta el panel (`node trainer.mjs` sigue funcionando: es un atajo) |
+| `node stemma.mjs --dev` | Además, vuelve a inyectar el panel cada vez que guardas un archivo de `src/` o `locales/` |
+| `node stemma.mjs --check` | Comprueba `src/` y `locales/` (sintaxis, JSON, claves de idioma) sin abrir el juego |
 
 ## Estructura
 
 ```
-trainer.mjs            Node: conexión con el juego, empaquetado de src/, --dev y --check
+stemma.mjs            Node: conexión con el juego, empaquetado de src/, --dev y --check
 src/
 ├─ main.js             punto de entrada dentro del juego (construye el panel, F8)
 ├─ game.js             ÚNICO archivo con los identificadores internos del juego (con hook.js)
-├─ hook.js             puerta de los botones del trainer en el juego (también corre sola, antes que el juego)
+├─ hook.js             puerta de los botones de Stemma en el juego (también corre sola, antes que el juego)
 ├─ core/
 │  ├─ panel.js         ventana: mover, redimensionar, cabecera, rejilla de secciones
 │  ├─ ui.js            piezas reutilizables: filas, edad, editor de rasgos, desplegables
-│  ├─ achievements.js  logros que consigue el trainer (en el juego y en Steam)
+│  ├─ achievements.js  logros que consigue Stemma (en el juego y en Steam)
 │  ├─ i18n.js          t('clave'), idioma actual
 │  ├─ flags.js         banderas (SVG) y orden de los idiomas
 │  ├─ selection.js     personaje y mascota elegidos (compartidos entre secciones)
@@ -53,10 +53,10 @@ src/
    ├─ index.js         lista y orden por defecto de las secciones
    └─ resources.js, family.js, traitStacks.js, pets.js, estate.js, multipliers.js, achievements.js, warEvents.js, extras.js
 locales/               un JSON de textos por idioma (es, pt, en, ru, fr, de)
-docs/                  guías del trainer y mecánicas del juego
+docs/                  guías de Stemma y mecánicas del juego
 ```
 
-El código de `src/` **se ejecuta dentro del juego**, no en Node. `trainer.mjs` lo junta en un solo script con un cargador mínimo tipo CommonJS:
+El código de `src/` **se ejecuta dentro del juego**, no en Node. `stemma.mjs` lo junta en un solo script con un cargador mínimo tipo CommonJS:
 
 - cada archivo es un módulo cuyo id es su ruta sin `.js` (`src/core/ui.js` → `'core/ui'`);
 - se usa con `require('core/ui')` y `module.exports`;
@@ -87,7 +87,7 @@ No hay paso de compilación: el script se arma de nuevo en cada inyección.
    ```
 2. Añádela a la lista de `src/features/index.js`.
 3. Añade sus textos (al menos `"ejemplo": "Título"`) en cada `locales/*.json`.
-4. Con `node trainer.mjs --dev` corriendo, verás la sección al guardar.
+4. Con `node stemma.mjs --dev` corriendo, verás la sección al guardar.
 
 Piezas disponibles en `ui` (ver `src/core/ui.js`):
 
@@ -106,13 +106,13 @@ La selección de personaje o mascota está en `core/selection` (`sel.character()
 
 1. Copia `locales/es.json` a `locales/<código>.json` y traduce los valores. No cambies las claves; `langName` es el nombre que aparece al pasar el ratón sobre la bandera.
 2. Añade la bandera en `src/core/flags.js`, con el mismo código.
-3. `node trainer.mjs --check` avisa si a algún idioma le faltan o le sobran claves (las que falten se muestran en español).
+3. `node stemma.mjs --check` avisa si a algún idioma le faltan o le sobran claves (las que falten se muestran en español).
 
 ## Si una actualización del juego rompe algo
 
 - **Identificadores internos.** Los del juego (`'50ab'`, `'a822'`, `'fc68'`…) están **solo en `src/game.js`**, agrupados por tema. Si un grupo no carga, el panel muestra "No disponible en esta versión del juego" en lo que dependa de él. La consola del juego (F12, o las DevTools por el puerto de depuración) muestra `[trainer] <grupo> no disponible`.
 - **API de mods.** La sección Extras usa `game.DA.api()`: la API `daapi` del juego `[6174]` creada con `isDAAPI: false`, como en los eventos del propio juego. Nunca hay que llamar a `setupDAAPI` ni poner `settings.enableMods`, porque marcan la partida con `flagUsedMods` y desactivan sus logros para siempre.
-- **Botones en el juego.** Los botones y ventanas del juego llaman a sus métodos por nombre de evento, a través de `invokeMethod` `[bc91]` y del contexto de eventos `[baa2]`. Se guardan en la partida, así que no pueden nombrar eventos que solo existen con el trainer: si un evento falta, `bc91` lo anota con `console.warn`, el juego guarda el aviso en `current.sessionErrorLog` `[9b31]` y, como el `preCheck` se evalúa al dibujar el botón `[c29c]`, eso lo vuelve a dibujar y el juego se cuelga. Por eso `src/hook.js` usa como puerta `lifeAndDeath/birth.preCheckIfAlive`, una comprobación del juego sin efectos: sin `characterId` devuelve `undefined`, y con el trainer lleva `{ trainer: { event, method, context } }` a lo registrado con `HOOK.register` (las referencias se crean con `HOOK.call`). Sin el trainer, los botones se ven pero no hacen nada: el juego no los oculta, porque usa el resultado de `dispatch`, que siempre es una Promise. Las partidas de antes usaban eventos `trainer/<nombre>`: `trainer.mjs` registra `hook.js` con `Page.addScriptToEvaluateOnNewDocument` (un chunk falso de webpack que corre antes que el juego), y `sync()` cambia esos botones. `hook.js` no usa `require`, porque también corre solo. Si se cambian los botones, sube `VERSION` en `extras/ingame.js` para que se rehagan.
+- **Botones en el juego.** Los botones y ventanas del juego llaman a sus métodos por nombre de evento, a través de `invokeMethod` `[bc91]` y del contexto de eventos `[baa2]`. Se guardan en la partida, así que no pueden nombrar eventos que solo existen con Stemma: si un evento falta, `bc91` lo anota con `console.warn`, el juego guarda el aviso en `current.sessionErrorLog` `[9b31]` y, como el `preCheck` se evalúa al dibujar el botón `[c29c]`, eso lo vuelve a dibujar y el juego se cuelga. Por eso `src/hook.js` usa como puerta `lifeAndDeath/birth.preCheckIfAlive`, una comprobación del juego sin efectos: sin `characterId` devuelve `undefined`, y con Stemma lleva `{ trainer: { event, method, context } }` a lo registrado con `HOOK.register` (las referencias se crean con `HOOK.call`). Sin Stemma, los botones se ven pero no hacen nada: el juego no los oculta, porque usa el resultado de `dispatch`, que siempre es una Promise. Las partidas de antes usaban eventos `trainer/<nombre>`: `stemma.mjs` registra `hook.js` con `Page.addScriptToEvaluateOnNewDocument` (un chunk falso de webpack que corre antes que el juego), y `sync()` cambia esos botones. `hook.js` no usa `require`, porque también corre solo. Si se cambian los botones, sube `VERSION` en `extras/ingame.js` para que se rehagan.
 - **Ventana "Arrange Betrothal".** El botón de la casamentera se agrega al DOM de esa vista del juego (`game.betrothalView()`) y se vuelve a poner si el juego la redibuja. Sus candidatos se crean con el generador del juego (`game.SPOUSES`) y se ponen al principio de `current.generatedPotentialSpouseCharacterIds`, que es de donde la vista saca su lista.
 - **Eventos militares.** Sus árboles, con las tiradas que fuerzan cada resultado, están copiados del código del juego en `src/war/events.js`. Si una actualización cambia un evento, hay que corregirlo ahí.
 - **Mecánicas.** Las notas de [docs](README.md) indican el módulo de cada fórmula, para volver a comprobarlas.

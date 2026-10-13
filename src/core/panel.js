@@ -103,7 +103,7 @@ function build() {
   const titleLine = el('div', 'display:flex;align-items:baseline;gap:8px;cursor:move', header)
   titleLine.title = t('dragHint')
   const title = el('span', 'font-weight:600;color:#e0c07a;flex:1', titleLine)
-  title.textContent = '⠿ Trainer'
+  title.textContent = '⠿ Stemma'
   const hint = el('span', 'font-size:11px;opacity:.7', titleLine)
   hint.textContent = t('hideHint')
   const ICON_BTN = 'background:none;border:none;color:#e0c07a;cursor:pointer;padding:0 2px;font-size:14px'

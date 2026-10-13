@@ -1,6 +1,6 @@
 # Eventos militares
 
-Mientras Roma está en guerra y tu personaje sirve en ella, pueden aparecer ocho eventos con árbol de decisiones. En casi todos se puede ganar una **corona** (un honor militar con su rasgo y su logro), y en varios **se puede morir**. El trainer tiene una sección **Eventos militares** con todos los árboles, y muestra un consejo junto a la ventana del evento cuando aparece.
+Mientras Roma está en guerra y tu personaje sirve en ella, pueden aparecer ocho eventos con árbol de decisiones. En casi todos se puede ganar una **corona** (un honor militar con su rasgo y su logro), y en varios **se puede morir**. Stemma tiene una sección **Eventos militares** con todos los árboles, y muestra un consejo junto a la ventana del evento cuando aparece.
 
 ## La guerra
 
@@ -81,7 +81,7 @@ prestigio   × ingresos / 10       (si el evento lo pide)   × factor de clase
 - "Games and a Banquet" (−60.000 dinero, +29.000 / +23.000) es lo que más da.
 - Al final: +15.000 dinero y un solar para tu mansión.
 
-## En el trainer
+## En Stemma
 
 La sección **Eventos militares** muestra cada árbol con la probabilidad y los efectos de cada opción, ya escalados para tu partida, y marca con ★ la recomendada.
 
@@ -89,7 +89,7 @@ La recomendada es la de menos riesgo de morir; a igual riesgo, la de más corona
 
 ### Forzar el resultado
 
-El juego decide el azar de un paso en el mismo momento en que se pulsa la opción que lleva a él: el método del evento se ejecuta de forma síncrona (`processInteractionModalAction` `[8be1]` → `[bc91]`) y llama a `Math.random()` una o dos veces. En el consejo, cada opción que lleva a un paso con azar tiene botones **🎲 Forzar**, uno por resultado posible (por ejemplo, "☠ muerte" o "👑 Corona Civica"). Al pulsar uno, el trainer elige esa opción en el juego con las tiradas fijadas para ese resultado; las llamadas siguientes a `Math.random()` vuelven a ser al azar.
+El juego decide el azar de un paso en el mismo momento en que se pulsa la opción que lleva a él: el método del evento se ejecuta de forma síncrona (`processInteractionModalAction` `[8be1]` → `[bc91]`) y llama a `Math.random()` una o dos veces. En el consejo, cada opción que lleva a un paso con azar tiene botones **🎲 Forzar**, uno por resultado posible (por ejemplo, "☠ muerte" o "👑 Corona Civica"). Al pulsar uno, Stemma elige esa opción en el juego con las tiradas fijadas para ese resultado; las llamadas siguientes a `Math.random()` vuelven a ser al azar.
 
 - Las tiradas de cada rama están en `roll` dentro de `src/war/events.js`, una por cada llamada que hace el método.
 - Se comprobaron ejecutando el código real de cada evento con un estado simulado: las 37 ramas salen como se espera y usan exactamente esas tiradas.

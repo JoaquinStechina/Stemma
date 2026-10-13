@@ -31,7 +31,7 @@ Cada unidad tiene un precio (`value`) y un ingreso (`revenue`). Al vender se rec
 | **Horse** | **125** | 0,324 | **0,26%** |
 
 - Tierras y ganado rinden parecido (~0,7% de su precio); **el caballo es la peor inversión**.
-- Los ingresos se pueden subir con los multiplicadores `property_<tipo>` (en el trainer: Multiplicadores → Propiedades).
+- Los ingresos se pueden subir con los multiplicadores `property_<tipo>` (en Stemma: Multiplicadores → Propiedades).
 
 ## Límite administrable `[40cf]`
 
@@ -57,6 +57,6 @@ límite = base_del_grupo × capacidad_de_la_casa
 - Hay márgenes de tiempo: desde que empieza el exceso pasan ~0,33 años antes del primer evento, y entre un evento y el siguiente ~0,25 años. **En guerra los márgenes son más largos** (~1 año y ~0,75 años).
 - El juego ofrece "vender todo lo que no se puede administrar" (acción `propertySellExcess`) al 90% de su precio.
 
-## En el trainer
+## En Stemma
 
 La sección **Propiedades de la casa** muestra cada tipo con su límite, en amarillo si se pasa del límite y en rojo si pasa de 1,2×. Las propiedades se añaden **gratis**, sin descontar dinero.

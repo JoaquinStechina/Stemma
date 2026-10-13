@@ -147,7 +147,7 @@ const DA = load('daapi', req => {
   return { api: () => make({ state: S(), dispatch: store().dispatch, commit: store().commit }, { isDAAPI: false }), newId: req('e381').default }
 })
 
-// Eventos del trainer dentro del juego (ver hook.js). trainer.mjs ya lo instala al
+// Eventos del trainer dentro del juego (ver hook.js). stemma.mjs ya lo instala al
 // empezar la página; aquí también, por si el juego se abrió antes que el trainer.
 const HOOK = load('eventos', req => {
   hook.install(req)

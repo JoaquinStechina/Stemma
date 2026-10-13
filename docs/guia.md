@@ -1,6 +1,6 @@
-# Guía del trainer
+# Guía de Stemma
 
-Cómo funciona cada parte del panel y qué tener en cuenta al usarla. Para instalarlo, ver el [README](../README.md#instalación-y-uso).
+Cómo funciona cada parte del panel y qué tener en cuenta al usarla. Para instalarlo, ver el [README](../README.md#quick-start) (en inglés).
 
 ## El panel
 
@@ -23,7 +23,7 @@ Dinero, influencia y prestigio de la dinastía.
 
 Elige un miembro de la casa en el desplegable y cambia:
 
-- **Edad.** El juego la calcula a partir de la fecha de nacimiento (año de 13 meses), así que el trainer mueve el año de nacimiento. Envejecer mucho a alguien aumenta su probabilidad de morir.
+- **Edad.** El juego la calcula a partir de la fecha de nacimiento (año de 13 meses), así que Stemma mueve el año de nacimiento. Envejecer mucho a alguien aumenta su probabilidad de morir.
 - **Habilidades:** inteligencia, administración, elocuencia y combate. En la mayoría de las fórmulas del juego, a partir de ~27–30 ya se llega al máximo. La excepción son los **sueldos**, que siguen subiendo con las habilidades (ver [Trabajos](trabajos.md#ingresos-de-un-trabajo-522c)).
 - **Nivel de trabajo**, con un botón para ponerlo al máximo de su oficio.
 - **Rasgos.** Se añaden y quitan con las funciones del juego, así que suman o restan sus bonus de habilidad y eliminan los rasgos opuestos.
@@ -49,22 +49,22 @@ Las 22 propiedades (tierras, animales, barcos y fincas) con su límite administr
 
 ## Multiplicadores
 
-Un factor propio del trainer para salud, ingresos, fertilidad, gastos, administración, cada trabajo y cada propiedad, de la casa o de un personaje o mascota.
+Un factor propio de Stemma para salud, ingresos, fertilidad, gastos, administración, cada trabajo y cada propiedad, de la casa o de un personaje o mascota.
 
 - El factor es **permanente**, se guarda con la partida y se multiplica con los del juego.
 - En "Gastos" conviene un factor **menor que 1** (0,5 = mitad de gastos).
-- "Activos ahora" muestra todos los multiplicadores en vigor, del juego y del trainer.
+- "Activos ahora" muestra todos los multiplicadores en vigor, del juego y de Stemma.
 
 ## Logros
 
 Marca o quita logros, agrupados como en el juego, con buscador, filtro (todos, conseguidos, pendientes) y contador.
 
 - **"Conseguido"** cambia la lista global del juego (la de su pantalla de logros). **"En esta partida"** se guarda con la partida.
-- **"Desbloquear también en Steam"** (activado por defecto): al marcar un logro, o al añadir con el trainer un rasgo que tiene logro (coronas, heridas, *Veteran*, *Pedigreed*…), se desbloquea también en Steam. **Los logros de Steam no se pueden quitar.**
+- **"Desbloquear también en Steam"** (activado por defecto): al marcar un logro, o al añadir con Stemma un rasgo que tiene logro (coronas, heridas, *Veteran*, *Pedigreed*…), se desbloquea también en Steam. **Los logros de Steam no se pueden quitar.**
 - **"Enviar a Steam los conseguidos"** desbloquea en Steam todos los de la lista del juego, por ejemplo los que marcaste antes solo en el juego.
 - Quitar un logro solo lo quita en el juego.
 
-Detalles: [Logros](logros.md#en-el-trainer).
+Detalles: [Logros](logros.md#en-stemma).
 
 ## Eventos militares
 
@@ -72,15 +72,15 @@ Cuando Roma está en guerra pueden aparecer 8 eventos con árbol de decisiones. 
 
 - **Sección Eventos militares:** el árbol completo de cada evento, con la probabilidad de morir y de ganar la corona, las heridas y los premios de cada opción, con las cifras reales de tu partida.
 - **Consejo en el juego:** cuando aparece uno de estos eventos, se muestra un recuadro al lado de su ventana con lo que pasa en cada opción, y la recomendada se marca con ★ también en el juego. Si hay un camino con más probabilidad de corona, aparece una línea "A por la corona". Se puede desactivar con la casilla de la sección.
-- **Forzar el resultado:** en las opciones con azar aparecen botones **🎲 Forzar**, uno por resultado posible (corona, victoria, muerte…). Al pulsar uno, el trainer elige esa opción con la tirada que da ese resultado. Lo demás lo hace el juego, incluidos los logros, que también se desbloquean en Steam.
+- **Forzar el resultado:** en las opciones con azar aparecen botones **🎲 Forzar**, uno por resultado posible (corona, victoria, muerte…). Al pulsar uno, Stemma elige esa opción con la tirada que da ese resultado. Lo demás lo hace el juego, incluidos los logros, que también se desbloquean en Steam.
 
 La opción recomendada es la de menos riesgo de morir; a igual riesgo, la de más probabilidad de corona, menos heridas y más prestigio e influencia. Detalles y mejor camino de cada evento: [Eventos militares](eventos-militares.md).
 
 ## Extras
 
-Lo que hacen los [mods de ejemplo oficiales](https://github.com/CitizenOfRomeDynastyAscendant/example-mods), el mod de temas de [Prahlad](https://github.com/prahlad-swarnkar/CORmods) y el banco y la casamentera de [peritiSumus](https://github.com/peritiSumus/CoR-Mods), pero desde el trainer.
+Lo que hacen los [mods de ejemplo oficiales](https://github.com/CitizenOfRomeDynastyAscendant/example-mods), el mod de temas de [Prahlad](https://github.com/prahlad-swarnkar/CORmods) y el banco y la casamentera de [peritiSumus](https://github.com/peritiSumus/CoR-Mods), pero desde Stemma.
 
-Activar los mods en el juego desactiva los logros de la partida para siempre. El trainer no los activa: usa las mismas funciones que el propio juego usa internamente, así que **los logros del juego y de Steam siguen activos** ([detalles](mecanicas-generales.md#logros-y-modo-mods)).
+Activar los mods en el juego desactiva los logros de la partida para siempre. Stemma no los activa: usa las mismas funciones que el propio juego usa internamente, así que **los logros del juego y de Steam siguen activos** ([detalles](mecanicas-generales.md#logros-y-modo-mods)).
 
 Cada opción se puede usar desde el panel o **desde la interfaz del juego**, como en los mods originales:
 
@@ -89,11 +89,11 @@ Cada opción se puede usar desde el panel o **desde la interfaz del juego**, com
 - **En la pantalla principal:** botones de Argentarius, Tema, Nueva dinastía y Escenarios.
 - Los botones abren **ventanas del juego**, con los costos al lado de cada opción y su aviso "You may not be able to afford this" si no te alcanza.
 - En el bloque **"Botones en el juego"** se elige cuáles mostrar; vienen todos activados.
-- Los botones quedan guardados en la partida. **Sin el trainer conectado se ven pero no hacen nada** (el juego no los oculta), y vuelven a funcionar al conectarlo.
+- Los botones quedan guardados en la partida. **Sin Stemma conectado se ven pero no hacen nada** (el juego no los oculta), y vuelven a funcionar al conectarlo.
 
 | Bloque | Qué hace |
 |---|---|
-| **Tema** | 20 temas de color o los del juego, y un botón para el **modo oscuro** del juego (el mismo ajuste de Settings). Claros: *Green*, *Mono Mix* y *Vestalia* (del mod de Prahlad), *Imperial Purple*, *Marble & Gold*, *Pompeian Red*, *Mare Nostrum*, *Olive Grove*, *Legion* y *High Contrast*. Oscuros (marcados con ☾): *Saturnalia*, *Nox*, *Vesuvius*, *Catacombs*, *Tyrian Night*, *Sacred Grove*, *Bronze Age*, *Neptune* y *High Contrast Dark*. Todos se leen con o sin el modo oscuro. El trainer recuerda el tema elegido. |
+| **Tema** | 20 temas de color o los del juego, y un botón para el **modo oscuro** del juego (el mismo ajuste de Settings). Claros: *Green*, *Mono Mix* y *Vestalia* (del mod de Prahlad), *Imperial Purple*, *Marble & Gold*, *Pompeian Red*, *Mare Nostrum*, *Olive Grove*, *Legion* y *High Contrast*. Oscuros (marcados con ☾): *Saturnalia*, *Nox*, *Vesuvius*, *Catacombs*, *Tyrian Night*, *Sacred Grove*, *Bronze Age*, *Neptune* y *High Contrast Dark*. Todos se leen con o sin el modo oscuro. Stemma recuerda el tema elegido. |
 | **Jugar como** | Pasas a controlar a otro personaje vivo, de la casa o de fuera. Su casa pasa a ser la tuya y tu personaje actual sigue en la partida. |
 | **Divorcio** | Separa a una pareja de la casa. |
 | **Dar en adopción** | Un hijo de hasta 15 años, sin pareja, que no esté estudiando ni de viaje, deja la familia. Como en el mod, el juego lo registra como una muerte y muestra la ventana del funeral. |
@@ -179,17 +179,17 @@ Los datos de los escenarios vienen de los mods de ejemplo de Sathvik Software So
 Para usar otro puerto en vez del 9222, pon el mismo número en las opciones de lanzamiento del juego y en la variable `CDP_PORT`. En PowerShell:
 
 ```
-$env:CDP_PORT=9333; node trainer.mjs
+$env:CDP_PORT=9333; node stemma.mjs
 ```
 
 ## Problemas frecuentes
 
 | Mensaje o problema | Qué hacer |
 |---|---|
-| "Esperando al juego en el puerto 9222..." | El juego no está abierto, o le falta la opción de lanzamiento `--remote-debugging-port=9222`. Ábrelo (o ciérralo, revisa la opción en Steam y vuelve a abrirlo): el trainer se conecta solo. |
-| El juego se queda cargando la partida (y "El juego no responde" en el trainer) | Pasa con partidas guardadas con una versión anterior del trainer si se cargan sin él. Cierra el juego con el trainer abierto y vuelve a abrirlo: el trainer lo prepara antes de que cargue la partida y actualiza los botones. Guarda la partida, y desde entonces carga bien también sin el trainer. |
+| "Esperando al juego en el puerto 9222..." | El juego no está abierto, o le falta la opción de lanzamiento `--remote-debugging-port=9222`. Ábrelo (o ciérralo, revisa la opción en Steam y vuelve a abrirlo): Stemma se conecta solo. |
+| El juego se queda cargando la partida (y "El juego no responde" en Stemma) | Pasa con partidas guardadas con una versión anterior de Stemma si se cargan sin él. Cierra el juego con Stemma abierto y vuelve a abrirlo: Stemma lo prepara antes de que cargue la partida y actualiza los botones. Guarda la partida, y desde entonces carga bien también sin Stemma. |
 | "El juego aún no tiene una partida cargada" | Carga una partida: el panel aparece solo al recargar. |
-| No veo el panel | Pulsa **F8**, que lo muestra u oculta. Comprueba que la ventana del trainer dice "Panel listo". |
+| No veo el panel | Pulsa **F8**, que lo muestra u oculta. Comprueba que la ventana de Stemma dice "Panel listo". |
 | Una sección dice "No disponible" | Probablemente una actualización del juego cambió algo que usa esa sección. El resto del panel sigue funcionando. Ver [Desarrollo](desarrollo.md#si-una-actualización-del-juego-rompe-algo). |
-| "El juego se cerró." | Es normal: el trainer espera a que vuelvas a abrirlo. **Ctrl+C** lo cierra. |
+| "El juego se cerró." | Es normal: Stemma espera a que vuelvas a abrirlo. **Ctrl+C** lo cierra. |
 | "Node no se reconoce como comando" | Instala [Node.js](https://nodejs.org/) 22 o superior y abre una terminal nueva. |

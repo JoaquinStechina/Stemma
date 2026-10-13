@@ -29,7 +29,7 @@ Algunos **rasgos tienen un logro con el mismo id**:
 - Personajes: las seis coronas, *Veteran*, *One Handed*, *Arm-less*, *One Legged*, *Legless*, *Malnourished*, *Obese* y *Novus Homo*.
 - Mascotas: *Malnourished*, *Blessed* y *Pedigreed*.
 
-## En el trainer
+## En Stemma
 
 La sección **Logros** marca y desmarca directamente en esas listas, **sin llamar a `addAchievement`**, para evitar sus efectos secundarios (puntos 1 y 2):
 
@@ -37,12 +37,12 @@ La sección **Logros** marca y desmarca directamente en esas listas, **sin llama
 - "En esta partida": se guarda con la partida.
 - Un logro que aparece en dos grupos se muestra en ambos pero se cuenta una vez.
 
-**Steam**: con la casilla "Desbloquear también en Steam" activada (lo está por defecto), el trainer envía el mismo mensaje que el juego (`achievementGet`) cuando:
+**Steam**: con la casilla "Desbloquear también en Steam" activada (lo está por defecto), Stemma envía el mismo mensaje que el juego (`achievementGet`) cuando:
 
 - se marca un logro como conseguido (uno o "Marcar los mostrados", con confirmación);
-- se añade con el trainer un rasgo que tiene logro, a un personaje o a una mascota;
+- se añade con Stemma un rasgo que tiene logro, a un personaje o a una mascota;
 - se pulsa "Enviar a Steam los conseguidos", que desbloquea en Steam todos los de la lista del juego (por ejemplo, los marcados antes solo en el juego).
 
 Como el juego, no envía nada en modo fácil, sandbox o con mods, ni con los logros de API desactivados en los ajustes; en ese caso la sección lo avisa. Quitar un logro solo lo quita en el juego.
 
-Los resultados forzados de los [eventos militares](eventos-militares.md#en-el-trainer) pasan por las funciones del propio juego, que desbloquea sus logros con `addAchievement`.
+Los resultados forzados de los [eventos militares](eventos-militares.md#en-stemma) pasan por las funciones del propio juego, que desbloquea sus logros con `addAchievement`.

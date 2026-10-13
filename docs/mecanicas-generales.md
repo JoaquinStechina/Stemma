@@ -41,7 +41,7 @@ Se aplica a pagos y recompensas de eventos (`applyStatChanges` `[2ee0]`). **No**
 
 - El año tiene **13 meses** (calendario romano), con días distintos por mes. `[7de9]`
 - La edad no se guarda: se calcula con mes y año de nacimiento, en años con decimales. `[9b55]`
-- Cambiar la edad equivale a mover el año de nacimiento (es lo que hace el trainer).
+- Cambiar la edad equivale a mover el año de nacimiento (es lo que hace Stemma).
 
 ## Habilidades de personajes
 
@@ -74,20 +74,20 @@ Cuatro habilidades: **inteligencia, administración (stewardship), elocuencia y 
 - **Efectos que no son habilidades** (salud, fertilidad, ingresos, gastos): `[4476]` calcula un factor ×(1 + copias × 0,1) que solo aparece en el **desglose**. El total que aplica el juego usa el valor del rasgo sin las copias. Por eso acumular *Strong* no da más salud. Parece un fallo del juego.
 - El costo del médico sube con las copias de *Wounded* (×5 por copia de *Grievously Wounded*) `[0c3d]`.
 - El logro *Cos Tertivm* pide *Former Consul* ×2 `[3bbd]`.
-- El trainer tiene una sección **Rasgos acumulables** para cambiar las copias con las funciones del juego.
+- Stemma tiene una sección **Rasgos acumulables** para cambiar las copias con las funciones del juego.
 
 ## Multiplicadores (modificadores)
 
 - Se guardan en `current.modifiers[clave]` como una lista de entradas `{ factor, id, mes/año de fin, motivo }`. El valor total es el **producto** de las activas. `[fc68]`
 - Claves: `household_health`, `revenue`, `household_fertility`, `household_expenses`, `household_stewardship`, `job_<oficio>`, `property_<tipo>`, `character_*_<id>`, `pet_*_<id>`.
 - El juego **cachea** el total durante ~1 segundo.
-- Una entrada sin fecha de fin es **permanente** (así funciona el factor del trainer).
+- Una entrada sin fecha de fin es **permanente** (así funciona el factor de Stemma).
 - En gastos (`*_expenses`), un factor **menor que 1** es favorable.
 
 ## Logros y modo mods
 
 - Activar los **mods** del juego (sistema DAAPI) marca la partida con `flagUsedMods` y **desactiva los logros** de esa partida para siempre. Lo hace `setupDAAPI` `[e35e]` al encender la opción, y `addAchievement` `[c391]` no envía nada si `flagEasyMode`, `flagSandboxMode` o `flagUsedMods` están puestos.
-- La API de los mods (`daapi`) la crea la fábrica `[6174]`. El propio juego la usa en sus eventos con `isDAAPI: false` (por ejemplo, frugalidad `[ea0b]`), y así no marca la partida. El trainer la usa igual en la sección Extras.
+- La API de los mods (`daapi`) la crea la fábrica `[6174]`. El propio juego la usa en sus eventos con `isDAAPI: false` (por ejemplo, frugalidad `[ea0b]`), y así no marca la partida. Stemma la usa igual en la sección Extras.
 - Los modos fácil y sandbox también impiden desbloquear logros de Steam.
 - Ver [Logros](logros.md).
 

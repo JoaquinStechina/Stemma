@@ -109,7 +109,7 @@ La inteligencia entra en la base de la fórmula, así que **acelera las cuatro h
 
 - Se retroalimenta: la inteligencia también sube con los estudios (es la más lenta), y cada punto acelera el resto.
 - En el aprendizaje de un oficio, sube el nivel inicial del trabajo (efecto pequeño).
-- **Consejo**: subirle la inteligencia a un niño **antes del ludus** (con el trainer: Familia → Inteligencia) mejora toda su educación.
+- **Consejo**: subirle la inteligencia a un niño **antes del ludus** (con Stemma: Familia → Inteligencia) mejora toda su educación.
 
 ## ¿Retórica judicial o deliberativa?
 

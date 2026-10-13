@@ -65,7 +65,7 @@ sube docilidad  si aleatorio + mejora_docilidad/45 < velocidad / 2  (con dueño)
 | *Mimics Speech* | **Ningún evento lo da** | +1 aptitud, +5 docilidad | ×3 |
 | *Warrior Spirit* | **Ningún evento lo da** | +1 aptitud, +5 vigor, −5 docilidad | ×2 |
 
-*Learned Tricks*, *Mimics Speech* y *Warrior Spirit* están definidos pero ningún código los añade: solo se consiguen con mods o con el trainer.
+*Learned Tricks*, *Mimics Speech* y *Warrior Spirit* están definidos pero ningún código los añade: solo se consiguen con mods o con Stemma.
 
 Rasgos negativos y su efecto en el precio: *Ill* ×0,35, *Wounded* ×0,4, *Mangled* ×0,4, *Malnourished* ×0,8, *Blind* ×0,8, *Deaf* ×0,8, *Disfigured* ×0,7, *Accident Deformed* ×0,7.
 
