@@ -1,7 +1,7 @@
-// Qué puede pasar al elegir cada opción de un evento militar. Para las opciones
-// que llevan a otra ventana se supone que después se elige la recomendada
-// (better); crownPath da además el resultado jugando a por la corona (crownFirst).
-// Las cifras son valores esperados y ya están escaladas como lo hace el juego.
+// What can happen when choosing each option of a military event. For options
+// that lead to another window it is assumed the recommended one (better) is
+// chosen afterwards; crownPath also gives the result when going for the crown (crownFirst).
+// The figures are expected values and already scaled as the game does.
 const { EVENTS, SCALED } = require('war/events')
 const game = require('game')
 
@@ -10,7 +10,7 @@ const STAT_KEYS = ['pr', 'inf', 'cash']
 
 const empty = () => ({ death: 0, crown: 0, crownId: null, pr: 0, inf: 0, cash: 0, traits: {}, endWar: 0, endTerm: 0, exile: 0 })
 
-// Valor real de unos cambios del árbol ({ pr, inf, cash, sc }).
+// Real value of some tree changes ({ pr, inf, cash, sc }).
 function stats(st, into = empty()) {
   const sc = st.sc || SCALED
   for (const k of STAT_KEYS) {
@@ -27,8 +27,8 @@ function add(a, b, p) {
   return a
 }
 
-// Mejor primero: menos riesgo de morir, más probabilidad de corona, menos
-// heridas o rasgos malos, y más prestigio + influencia (+ dinero/10).
+// Best first: less risk of dying, higher chance of a crown, fewer
+// wounds or bad traits, and more prestige + influence (+ money/10).
 const EPS = 0.0005
 const badTraits = s => Object.entries(s.traits).filter(([id]) => !/^corona/.test(id)).reduce((n, [, q]) => n + q, 0)
 function better(a, b) {
@@ -37,7 +37,7 @@ function better(a, b) {
   if (Math.abs(badTraits(a) - badTraits(b)) > EPS) return badTraits(a) < badTraits(b)
   return a.pr + a.inf + a.cash / 10 > b.pr + b.inf + b.cash / 10
 }
-// Para quien busca la corona: primero la probabilidad de corona.
+// For whoever wants the crown: chance of a crown first.
 function crownFirst(a, b) {
   if (Math.abs(a.crown - b.crown) > EPS) return a.crown > b.crown
   return better(a, b)
@@ -47,7 +47,7 @@ const bestIndex = (summaries, cmp = better) => summaries.reduce((best, s, i) => 
 const prob = (b, ch) => typeof b.p === 'function' ? b.p(ch) : (b.p ?? 1)
 const traitsOf = (b, ch) => typeof b.traits === 'function' ? b.traits(ch) : (b.traits || [])
 
-// Efectos propios de una rama (sin lo que venga después).
+// A branch's own effects (without what comes after).
 function branchEffects(b, ch) {
   const s = stats(b)
   if (b.death) s.death = 1
@@ -58,11 +58,11 @@ function branchEffects(b, ch) {
   return s
 }
 
-// Ramas de un paso con su probabilidad para este personaje.
+// One-step branches with their probability for this character.
 const branches = (evId, key, ch) => (EVENTS[evId]?.steps[key] || [])
   .map(b => ({ b, p: Math.max(0, Math.min(1, prob(b, ch))) })).filter(x => x.p > 0)
 
-// `cmp` decide qué se elige en las ventanas siguientes (better o crownFirst).
+// `cmp` decides what is chosen in the following windows (better or crownFirst).
 function stepSummary(evId, key, ch, cmp = better, depth = 0) {
   const out = empty()
   if (depth > 40) return out
@@ -70,7 +70,7 @@ function stepSummary(evId, key, ch, cmp = better, depth = 0) {
   return out
 }
 
-// Una rama con lo que venga después (eligiendo según `cmp`).
+// A branch with what comes after (choosing according to `cmp`).
 function branchSummary(evId, b, ch, cmp = better, depth = 0) {
   const s = branchEffects(b, ch)
   if (b.options?.length) {
@@ -80,27 +80,27 @@ function branchSummary(evId, b, ch, cmp = better, depth = 0) {
   return s
 }
 
-// Opción del árbol: { text, to, st }.
+// Tree option: { text, to, st }.
 function optionSummary(evId, opt, ch, cmp = better, depth = 0) {
   const s = opt.st ? stats(opt.st) : empty()
   return opt.to ? add(s, stepSummary(evId, opt.to, ch, cmp, depth), 1) : s
 }
 
-// Lo mismo jugando a por la corona; null si así no hay más probabilidad de corona.
+// The same going for the crown; null if that gives no higher chance of a crown.
 function crownPath(evId, opt, ch, recSummary) {
   if (!opt.to) return null
   const s = optionSummary(evId, opt, ch, crownFirst)
   return s.crown > recSummary.crown + EPS ? s : null
 }
 
-// Paso al que lleva una acción del juego ({ event, method, context }).
+// Step a game action leads to ({ event, method, context }).
 function stepKey(evId, action) {
   const ctx = action.context?.examine ?? action.context?.type
   const steps = EVENTS[evId]?.steps || {}
   return ctx != null && steps[action.method + ':' + ctx] ? action.method + ':' + ctx : action.method
 }
 
-// statChanges del juego → valores reales.
+// The game's statChanges → real values.
 function liveStats(sc) {
   if (!sc) return empty()
   const scaled = sc.scaleByRevenue || []
@@ -111,18 +111,18 @@ function liveStats(sc) {
   return s
 }
 
-// Resultados que se pueden forzar en un paso con azar: [{ p, roll, summary }], o
-// null si el paso no tiene azar (o le faltan las tiradas).
+// Outcomes that can be forced in a step with a random element: [{ p, roll, summary }], or
+// null if the step has no random element (or the rolls are missing).
 function forceable(evId, key, ch) {
   const bs = branches(evId, key, ch)
   if (bs.length < 2 || bs.some(({ b }) => !b.roll)) return null
   return bs.map(({ b, p }) => ({ p, roll: b.roll, summary: branchSummary(evId, b, ch) }))
 }
 
-// Ventana abierta en el juego → { evId, ev, options: [{ text, summary, crown, force }], rec }
-// o null si no es un evento militar conocido. `crown` es el resumen jugando a por
-// la corona cuando difiere del recomendado; `force`, los resultados que se pueden
-// forzar al elegir esa opción (ver forceable).
+// Window open in the game → { evId, ev, options: [{ text, summary, crown, force }], rec }
+// or null if it is not a known military event. `crown` is the summary going for
+// the crown when it differs from the recommended one; `force`, the outcomes that can be
+// forced when choosing that option (see forceable).
 function analyzeModal(m, ch) {
   if (!m?.show || !m.options?.length) return null
   let evId = m.options.map(o => o.action?.event).find(e => EVENTS[e])

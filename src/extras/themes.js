@@ -1,17 +1,17 @@
-// Temas de color del mod "theme" de Prahlad (github.com/prahlad-swarnkar/CORmods):
-// la misma hoja de estilos con 4 colores por tema. Se aplica con una etiqueta
-// <style> propia (el trainer no usa los mods del juego) y se recuerda en
-// localStorage para volver a aplicarlo al recargar.
+// Color themes from Prahlad's "theme" mod (github.com/prahlad-swarnkar/CORmods):
+// the same stylesheet with 4 colors per theme. It is applied with its own
+// <style> tag (Stemma does not use the game's mods) and remembered in
+// localStorage to apply it again on reload.
 const ls = require('core/storage')
 
 const KEY = 'corTrainerTheme'
 const STYLE_ID = 'cor-trainer-theme'
 
-// light = fondo, main = botones y barras, accent = ventanas y etiquetas, ink = texto y bordes.
-// Green, Mono Mix y Vestalia son los del mod; los demás, del trainer. El texto de
-// las pantallas y ventanas pasa a `ink` (el modo oscuro del juego lo pone claro por
-// herencia), así cada tema se lee con o sin el modo oscuro. dark = tema oscuro (fondo
-// oscuro y texto claro; en las listas se marca con ☾).
+// light = background, main = buttons and bars, accent = windows and labels, ink = text and borders.
+// Green, Mono Mix and Vestalia are the mod's; the rest are Stemma's. The text of
+// screens and windows becomes `ink` (the game's dark mode makes it light by
+// inheritance), so each theme is readable with or without dark mode. dark = dark theme (dark
+// background and light text; marked with ☾ in the lists).
 const LIST = {
   baseGreen: { name: 'Green', light: 'lightgreen', main: 'darkgreen', accent: 'limegreen', ink: 'black' },
   monoMix: { name: 'Mono Mix', light: '#cad2c5', main: '#05668d', accent: '#bc8da0', ink: '#51344d' },
@@ -23,9 +23,9 @@ const LIST = {
   olive: { name: 'Olive Grove', light: '#e8ead4', main: '#556b2f', accent: '#b5c27a', ink: '#2c3315' },
   legion: { name: 'Legion', light: '#efe2cf', main: '#7a1712', accent: '#c89a5a', ink: '#3a2414' },
   contrast: { name: 'High Contrast', light: '#ffffff', main: '#000000', accent: '#ffe14d', ink: '#000000' },
-  // Oscuros: `deep` es un tono profundo de `main` para el fondo de botones, cifras,
-  // habilidades y barras, con el texto en `ink` (contraste 8:1, nivel AAA); `main`
-  // queda para los bordes. High Contrast Dark no lo necesita: negro sobre amarillo.
+  // Dark ones: `deep` is a deep shade of `main` for the background of buttons, figures,
+  // skills and bars, with the text in `ink` (contrast 8:1, AAA level); `main`
+  // is kept for the borders. High Contrast Dark does not need it: black on yellow.
   saturnalia: { name: 'Saturnalia', light: '#2b2620', main: '#b8862b', deep: '#533c13', accent: '#4a3f30', ink: '#f0e2c0', dark: true },
   nox: { name: 'Nox', light: '#1b2333', main: '#6fa8dc', deep: '#2f475c', accent: '#2c3a52', ink: '#e3ecf7', dark: true },
   vesuvius: { name: 'Vesuvius', light: '#231f1e', main: '#e0662f', deep: '#672f16', accent: '#3d3331', ink: '#f2ddd2', dark: true },
@@ -37,10 +37,10 @@ const LIST = {
   contrastDark: { name: 'High Contrast Dark', light: '#000000', main: '#ffe14d', accent: '#1a1a1a', ink: '#ffffff', dark: true },
 }
 
-// Nombre para las listas: los oscuros con ☾.
+// Name for the lists: dark ones with ☾.
 const label = id => (LIST[id].dark ? '☾ ' : '') + LIST[id].name
 
-// fill/text = fondo y texto de botones, cifras, habilidades y barras; edge = sus bordes.
+// fill/text = background and text of buttons, figures, skills and bars; edge = their borders.
 const css = ({ light, main, deep, accent, ink, dark }, bg) => {
   const fill = deep || main, text = deep ? ink : light, edge = deep ? main : ink
   return `
@@ -71,12 +71,12 @@ ${bg ? `#app{background:linear-gradient(hsla(0,0%,20%,.9),hsla(0,0%,20%,.9)),url
 
 const current = () => { const id = ls.get(KEY, ''); return LIST[id] ? id : '' }
 
-// Aplica el tema `id` ('' = el del juego) y lo recuerda.
+// Applies theme `id` ('' = the game's) and remembers it.
 function apply(id) {
   document.getElementById(STYLE_ID)?.remove()
   if (!LIST[id]) { ls.set(KEY, ''); return }
   ls.set(KEY, id)
-  // Imagen de fondo del juego (leída sin el tema puesto), para oscurecerla como el mod.
+  // The game's background image (read without the theme applied), to darken it as the mod does.
   const app = document.getElementById('app')
   const bg = app ? (getComputedStyle(app).backgroundImage.match(/url\("?([^")]+)"?\)/) || [])[1] : ''
   const style = document.createElement('style')

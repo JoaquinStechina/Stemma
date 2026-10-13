@@ -1,15 +1,15 @@
-// Traducciones del panel. Los textos están en locales/<idioma>.json; el host los
-// inyecta como el módulo "locales" ({ es: {...}, en: {...}, ... }).
-// Los nombres de rasgos, trabajos y propiedades vienen del juego (solo trae inglés).
+// Panel translations. The texts are in locales/<language>.json; the host
+// injects them as the "locales" module ({ es: {...}, en: {...}, ... }).
+// The names of traits, jobs and properties come from the game (it only has English).
 const ls = require('core/storage')
 const LOCALES = require('locales')
 
-const DEFAULT = 'es'
+const DEFAULT = 'en'
 let lang = ls.get('corTrainerLang', DEFAULT)
 if (!LOCALES[lang]) lang = DEFAULT
 
-// t('clave', { variable: valor }) -> texto en el idioma actual. Si falta en ese
-// idioma usa el español, y si tampoco existe devuelve la clave.
+// t('key', { variable: value }) -> text in the current language. If it is missing in that
+// language it uses the default one, and if that is missing too it returns the key.
 const t = (key, vars) => {
   let s = LOCALES[lang][key] ?? LOCALES[DEFAULT][key] ?? key
   for (const k in vars || {}) s = s.replace('{' + k + '}', vars[k])

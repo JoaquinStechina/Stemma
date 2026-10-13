@@ -184,14 +184,12 @@ $env:CDP_PORT=9333; node stemma.mjs
 
 ## Troubleshooting
 
-Stemma's host window prints its messages in Spanish; they are quoted below with a translation.
-
 | Message or problem | What to do |
 |---|---|
-| "Esperando al juego en el puerto 9222..." (waiting for the game) | The game isn't open, or it lacks the `--remote-debugging-port=9222` launch option. Open it (or close it, check the option in Steam and open it again): Stemma connects by itself. |
-| The game hangs while loading the save (and "El juego no responde", the game isn't responding, in Stemma) | This happens with saves made with an earlier version of Stemma if they are loaded without it. Close the game with Stemma open and start it again: Stemma prepares it before the save loads and updates the buttons. Save the game, and from then on it also loads fine without Stemma. |
-| "El juego aún no tiene una partida cargada" (the game has no save loaded yet) | Load a save: the panel appears by itself on reload. |
-| I can't see the panel | Press **F8**, which shows or hides it. Check that Stemma's window says "Panel listo" (panel ready). |
+| "Waiting for the game on port 9222..." | The game isn't open, or it lacks the `--remote-debugging-port=9222` launch option. Open it (or close it, check the option in Steam and open it again): Stemma connects by itself. |
+| The game hangs while loading the save (and "The game is not responding" in Stemma) | This happens with saves made with an earlier version of Stemma if they are loaded without it. Close the game with Stemma open and start it again: Stemma prepares it before the save loads and updates the buttons. Save the game, and from then on it also loads fine without Stemma. |
+| "The game has no save loaded yet" | Load a save: the panel appears by itself on reload. |
+| I can't see the panel | Press **F8**, which shows or hides it. Check that Stemma's window says "Panel ready". |
 | A section says "Not available" | Probably a game update changed something that section uses. The rest of the panel keeps working. See [Development](development.md#if-a-game-update-breaks-something). |
-| "El juego se cerró." (the game closed) | This is normal: Stemma waits for you to open it again. **Ctrl+C** closes it. |
+| "The game closed." | This is normal: Stemma waits for you to open it again. **Ctrl+C** closes it. |
 | "node is not recognized as a command" | Install [Node.js](https://nodejs.org/) 22 or newer and open a new terminal. |

@@ -1,6 +1,6 @@
-// Banderas de la cabecera, en el orden en que se muestran: [código de idioma, SVG].
-// Se dibujan en SVG porque Windows no muestra los emojis de banderas. Cada código
-// necesita sus textos en el módulo de idiomas.
+// Header flags, in the order they are shown: [language code, SVG].
+// They are drawn as SVG because Windows doesn't show flag emojis. Each code
+// needs its texts in the locales module.
 const stripesH = colors => colors.map((c, i) => '<rect y="' + (20 / colors.length) * i + '" width="30" height="' + (20 / colors.length + 0.05) + '" fill="' + c + '"/>').join('')
 const stripesV = colors => colors.map((c, i) => '<rect x="' + 10 * i + '" width="10.05" height="20" fill="' + c + '"/>').join('')
 const usa = () => {

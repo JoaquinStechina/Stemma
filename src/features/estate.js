@@ -1,7 +1,7 @@
-// Propiedades de la casa. current.propertyDetails guarda cuántas unidades tienes
-// de cada tipo. El juego calcula un límite administrable (según clase y
-// administración); por encima de 1,2× el límite hay eventos que te hacen perder
-// propiedades. Ocupa todo el ancho del panel y reparte sus grupos en columnas.
+// Household properties. current.propertyDetails stores how many units you have
+// of each type. The game works out a manageable limit (from class and
+// stewardship); above 1.2× the limit there are events that make you lose
+// properties. It takes the full width of the panel and spreads its groups over columns.
 const { el } = require('core/dom')
 const { t } = require('core/i18n')
 const game = require('game')
@@ -34,7 +34,7 @@ module.exports = {
         steps: [10],
         extra: [[t('toLimit'), () => setCount(k, limit(k))]],
         inline: () => '/ ' + limit(k),
-        // amarillo = por encima del límite; rojo = más de 1,2× (el juego puede quitarte parte)
+        // yellow = above the limit; red = more than 1.2× (the game may take part away)
         inlineColor: () => {
           const n = details()?.[k] || 0, m = limit(k)
           return n > m * 1.2 ? '#e38a7a' : n > m ? '#e0c07a' : ''

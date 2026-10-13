@@ -1,4 +1,4 @@
-// Recursos: dinero, influencia y prestigio de la dinastía.
+// Resources: the dynasty's money, influence and prestige.
 const { t } = require('core/i18n')
 const game = require('game')
 

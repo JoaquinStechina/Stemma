@@ -1,15 +1,15 @@
-// Piezas de interfaz reutilizables por las secciones. createUI() se llama en
-// cada construcción del panel y guarda las filas y refrescos de esa construcción;
-// ui.refresh() (llamado cada 500 ms y tras cada acción) actualiza lo que se ve.
+// UI pieces reusable by the sections. createUI() is called on
+// every panel build and keeps that build's rows and refreshes;
+// ui.refresh() (called every 500 ms and after each action) updates what is shown.
 const { CTRL_CSS, el, fmt } = require('core/dom')
 const { t } = require('core/i18n')
 const ls = require('core/storage')
 const game = require('game')
 
-// Bloques plegados dentro de las secciones: { 'family.traits': true, … }.
+// Collapsed blocks inside sections: { 'family.traits': true, … }.
 const GROUPS_KEY = 'corTrainerGroups'
 
-// Orden y nombres de los grupos de rasgos en los desplegables.
+// Order and names of the trait groups in the dropdowns.
 const GROUP_ORDER = ['education', 'personality', 'good', 'bad', 'goodGenetic', 'badGenetic', 'neutralGenetic', 'skill', 'militaryHonor', 'neutral']
 const groupName = g => GROUP_ORDER.includes(g) ? t('g_' + g) : g
 
@@ -17,12 +17,12 @@ function createUI() {
   const rows = [], refreshers = []
   const ui = {}
 
-  // Registra una función que se ejecuta en cada refresco; recibe `force`
-  // (true tras una acción del usuario, para redibujar aunque nada cambie).
+  // Registers a function that runs on every refresh; it receives `force`
+  // (true after a user action, to redraw even if nothing changed).
   ui.onRefresh = fn => refreshers.push(fn)
 
   ui.refresh = force => {
-    for (const fn of refreshers) { try { fn(force) } catch (e) { console.warn('[trainer]', e) } }
+    for (const fn of refreshers) { try { fn(force) } catch (e) { console.warn('[stemma]', e) } }
     for (const { c, input, btns, sub, inline } of rows) {
       let on = true; try { on = c.enabled ? c.enabled() : true } catch { on = false }
       input.disabled = !on
@@ -31,22 +31,22 @@ function createUI() {
       if (inline) {
         try { inline.textContent = c.inline(); inline.style.color = c.inlineColor ? c.inlineColor() : ''; inline.style.opacity = inline.style.color ? '1' : '.7' } catch {}
       }
-      if (document.activeElement === input) continue // no pisar lo que estás escribiendo
+      if (document.activeElement === input) continue // don't overwrite what you are typing
       let v; try { v = c.get() } catch {}
       input.value = fmt(v)
     }
   }
 
-  // Botón que ejecuta `fn` y refresca el panel.
+  // Button that runs `fn` and refreshes the panel.
   ui.button = (parent, text, fn, tip) => {
     const b = el('button', CTRL_CSS + ';padding:1px 6px;cursor:pointer', parent)
     b.textContent = text
     if (tip) b.title = tip
-    b.onclick = () => { try { fn(); ui.refresh(true) } catch (e) { console.warn('[trainer]', e) } }
+    b.onclick = () => { try { fn(); ui.refresh(true) } catch (e) { console.warn('[stemma]', e) } }
     return b
   }
 
-  // Desplegable a todo el ancho; `onchange(valor)` y luego refresca.
+  // Full-width dropdown; `onchange(value)` and then refresh.
   ui.select = (parent, onchange) => {
     const s = el('select', CTRL_CSS + ';width:100%;padding:2px;margin:2px 0', parent)
     s.onchange = () => { onchange(s.value); ui.refresh(true) }
@@ -56,14 +56,14 @@ function createUI() {
   ui.note = (parent, text) => { const n = el('div', 'font-size:11px;opacity:.7;margin-top:3px', parent); n.textContent = text; return n }
   ui.subheading = (parent, text) => { const h = el('div', 'margin-top:6px;color:#d9bf8c;font-weight:600', parent); h.textContent = text }
 
-  // Todo lo plegable del panel (secciones y bloques): { set(plegado), get() }.
-  // Lo usan los botones de la cabecera "plegar todo" / "desplegar todo".
+  // Everything collapsible in the panel (sections and blocks): { set(collapsed), get() }.
+  // Used by the "collapse all" / "expand all" header buttons.
   ui.collapsibles = []
 
-  // Bloque plegable dentro de una sección: clic en el título para abrir/cerrar.
-  // `key` identifica el bloque para recordar si está plegado (p. ej. 'family.traits');
-  // `folded` = plegado hasta que el jugador lo abra por primera vez.
-  // Devuelve el contenedor donde poner el contenido; su título es body.previousSibling.
+  // Collapsible block inside a section: click the title to open/close.
+  // `key` identifies the block to remember whether it is collapsed (e.g. 'family.traits');
+  // `folded` = collapsed until the player opens it for the first time.
+  // Returns the container to put the content in; its title is body.previousSibling.
   const groupState = ls.get(GROUPS_KEY, {})
   ui.group = (parent, text, key, folded = false) => {
     const head = el('div', 'margin-top:6px;color:#d9bf8c;font-weight:600;cursor:pointer', parent)
@@ -77,12 +77,12 @@ function createUI() {
     return body
   }
 
-  // Fila: etiqueta, campo editable (Enter o salir del campo = aplicar) y botones +N.
+  // Row: label, editable field (Enter or leaving the field = apply) and +N buttons.
   //   c = { label, get(), set(v), steps: [n, …] }
-  // Opcionales: c.enabled() desactiva la fila, c.extra = [[texto, fn, ayuda], …] añade
-  // botones, c.suffix() una nota debajo, c.inline() un texto corto junto al campo
-  // (con c.inlineColor()), c.wide = etiqueta flexible y campo estrecho (para nombres
-  // largos), c.tip = ayuda al pasar el ratón por la etiqueta.
+  // Optional: c.enabled() disables the row, c.extra = [[text, fn, tip], …] adds
+  // buttons, c.suffix() a note below, c.inline() a short text next to the field
+  // (with c.inlineColor()), c.wide = flexible label and narrow field (for long
+  // names), c.tip = tooltip when hovering over the label.
   ui.addRow = (c, parent) => {
     const row = el('div', 'display:flex;align-items:center;gap:4px;margin:4px 0', parent)
     const label = el('span', c.wide ? 'flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap' : 'width:92px;flex-shrink:0', row)
@@ -94,7 +94,7 @@ function createUI() {
     input.step = 'any'
     input.addEventListener('change', () => {
       const v = parseFloat(input.value)
-      if (!Number.isNaN(v)) { try { c.set(v) } catch (e) { console.warn('[trainer]', e) } }
+      if (!Number.isNaN(v)) { try { c.set(v) } catch (e) { console.warn('[stemma]', e) } }
       ui.refresh(true)
     })
     input.addEventListener('keydown', e => {
@@ -109,9 +109,9 @@ function createUI() {
     rows.push({ c, input, btns, sub, inline })
   }
 
-  // Fila de edad para un personaje o mascota. El juego calcula la edad a partir de
-  // birthMonth/birthYear, así que cambiarla es mover el año de nacimiento (se
-  // conserva el mes). `extraNote(x)` añade texto a la nota de debajo.
+  // Age row for a character or pet. The game works out age from
+  // birthMonth/birthYear, so changing it means moving the birth year (the month
+  // is kept). `extraNote(x)` adds text to the note below.
   ui.ageRow = (entity, parent, extraNote) => {
     const years = () => Math.floor(game.ageOf(entity()))
     const setAge = v => {
@@ -135,8 +135,8 @@ function createUI() {
     }, parent)
   }
 
-  // Editor de rasgos (personajes y mascotas): etiquetas con × para quitar y un
-  // desplegable agrupado para añadir.
+  // Trait editor (characters and pets): labels with × to remove and a
+  // grouped dropdown to add.
   ui.traitEditor = (parent, { entity, list, title, describe, add, remove, available }) => {
     const chips = el('div', 'display:flex;flex-wrap:wrap;gap:4px;margin:4px 0', parent)
     const line = el('div', 'display:flex;gap:4px;margin-top:4px', parent)
@@ -164,8 +164,8 @@ function createUI() {
     })
   }
 
-  // Rellena el desplegable `pick` con los rasgos `ids`, agrupados y ordenados por
-  // nombre. Conserva lo elegido si sigue en la lista.
+  // Fills the `pick` dropdown with the traits `ids`, grouped and sorted by
+  // name. Keeps the chosen one if it is still in the list.
   ui.fillTraitSelect = (pick, ids, defs, title, describe) => {
     const prev = pick.value
     pick.innerHTML = ''
@@ -185,9 +185,9 @@ function createUI() {
     if (prev && ids.includes(prev)) pick.value = prev
   }
 
-  // Rellena `sel` con list() y lo reconstruye solo cuando cambia la lista.
-  // Si el elegido desaparece, elige el primero. Si otra sección cambia la
-  // selección compartida, el desplegable la sigue.
+  // Fills `sel` with list() and rebuilds it only when the list changes.
+  // If the chosen one disappears, picks the first. If another section changes the
+  // shared selection, the dropdown follows it.
   ui.rosterSelect = (sel, list, getId, setId, label, emptyText) => {
     let sig = ''
     ui.onRefresh(() => {

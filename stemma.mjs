@@ -1,24 +1,24 @@
-// Stemma :: companion para Citizen of Rome - Dynasty Ascendant, por Chrome DevTools Protocol
+// Stemma :: companion for Citizen of Rome - Dynasty Ascendant, over the Chrome DevTools Protocol
 //
-// Requisitos: Node 22+ (usa fetch y WebSocket nativos, sin dependencias).
-// Uso:
-//   1. Steam -> juego -> Propiedades -> Opciones de lanzamiento:
+// Requirements: Node 22+ (uses native fetch and WebSocket, no dependencies).
+// Usage:
+//   1. Steam -> game -> Properties -> Launch options:
 //        --remote-debugging-port=9222
-//   2. node stemma.mjs (si el juego no está abierto, lo espera)
-//        --dev    reinyecta el panel al guardar cambios en src/ o locales/
-//        --check  valida src/ y locales/ sin abrir el juego
-//   3. Abre el juego y carga tu partida.
-//   4. En el juego, pulsa F8 para mostrar/ocultar el panel del trainer.
+//   2. node stemma.mjs (if the game is not open yet, it waits for it)
+//        --dev    injects the panel again when you save changes in src/ or locales/
+//        --check  validates src/ and locales/ without opening the game
+//   3. Open the game and load your save.
+//   4. In the game, press F8 to show/hide Stemma's panel.
 //
-// El script queda conectado y vuelve a inyectar el panel si el juego recarga
-// la página; si el juego se cierra, espera a que se vuelva a abrir. Ctrl+C para
-// salir (el panel desaparece al recargar el juego).
+// The script stays connected and injects the panel again if the game reloads
+// the page; if the game closes, it waits for it to open again. Ctrl+C to
+// quit (the panel disappears when the game reloads).
 //
-// El panel vive en src/ (se ejecuta DENTRO del juego). Este archivo lo empaqueta
-// en un único script con un cargador mínimo tipo CommonJS: cada archivo de src/
-// es un módulo cuyo id es su ruta sin ".js" (p. ej. "core/ui"), y se usa con
-// require('core/ui') y module.exports. El punto de entrada es src/main.js.
-// Los textos están en locales/<idioma>.json y llegan al panel como el módulo "locales".
+// The panel lives in src/ (it runs INSIDE the game). This file bundles it
+// into a single script with a minimal CommonJS-style loader: each file in src/
+// is a module whose id is its path without ".js" (e.g. "core/ui"), used with
+// require('core/ui') and module.exports. The entry point is src/main.js.
+// The texts are in locales/<language>.json and reach the panel as the "locales" module.
 
 import { readFileSync, readdirSync, watch } from 'fs'
 import { dirname, join, relative, basename } from 'path'
@@ -28,9 +28,9 @@ const PORT = Number(process.env.CDP_PORT || 9222)
 const ROOT = dirname(fileURLToPath(import.meta.url))
 const SRC = join(ROOT, 'src')
 const LOCALES = join(ROOT, 'locales')
-const BASE_LANG = 'es' // idioma de referencia: los demás deben tener sus mismas claves
+const BASE_LANG = 'en' // reference language: the others must have the same keys
 
-// --- Empaquetado ----------------------------------------------------------------
+// --- Bundling ----------------------------------------------------------------
 
 function listModules(dir) {
   return readdirSync(dir, { withFileTypes: true }).flatMap(d => {
@@ -40,8 +40,8 @@ function listModules(dir) {
   })
 }
 
-// Lee locales/*.json -> { es: {...}, en: {...}, ... }. Un JSON mal escrito es un
-// error con el nombre del archivo.
+// Reads locales/*.json -> { es: {...}, en: {...}, ... }. A malformed JSON is an
+// error with the file name.
 function loadLocales() {
   const out = {}
   for (const name of readdirSync(LOCALES).filter(n => n.endsWith('.json')).sort()) {
@@ -49,35 +49,35 @@ function loadLocales() {
       throw new Error(`locales/${name}: ${e.message}`)
     }
   }
-  if (!out[BASE_LANG]) throw new Error(`falta locales/${BASE_LANG}.json`)
+  if (!out[BASE_LANG]) throw new Error(`missing locales/${BASE_LANG}.json`)
   return out
 }
 
-// Avisos (no errores) si un idioma no tiene las mismas claves que el de referencia.
-// Una clave que falta se muestra en español en el panel.
+// Warnings (not errors) if a language does not have the same keys as the reference one.
+// A missing key is shown in the reference language in the panel.
 function localeWarnings(locales) {
   const base = Object.keys(locales[BASE_LANG])
   const warnings = []
   for (const [lang, texts] of Object.entries(locales)) {
     const keys = Object.keys(texts)
     const missing = base.filter(k => !keys.includes(k)), extra = keys.filter(k => !base.includes(k))
-    if (missing.length) warnings.push(`locales/${lang}.json: faltan ${missing.join(', ')}`)
-    if (extra.length) warnings.push(`locales/${lang}.json: sobran ${extra.join(', ')}`)
+    if (missing.length) warnings.push(`locales/${lang}.json: missing ${missing.join(', ')}`)
+    if (extra.length) warnings.push(`locales/${lang}.json: extra ${extra.join(', ')}`)
   }
   return warnings
 }
 
-// Devuelve el script a inyectar: define cada módulo y ejecuta require('main').
+// Returns the script to inject: defines each module and runs require('main').
 function bundle() {
   const files = listModules(SRC).sort()
   const locales = loadLocales()
-  for (const w of localeWarnings(locales)) console.warn('Aviso:', w)
+  for (const w of localeWarnings(locales)) console.warn('Warning:', w)
   let out = '(() => {\n' +
     'const __mods = {}, __cache = {}\n' +
     'const __def = (id, fn) => { __mods[id] = fn }\n' +
     'const require = id => {\n' +
     '  if (__cache[id]) return __cache[id].exports\n' +
-    "  if (!__mods[id]) throw new Error('[trainer] módulo no encontrado: ' + id)\n" +
+    "  if (!__mods[id]) throw new Error('[stemma] module not found: ' + id)\n" +
     '  const module = { exports: {} }\n' +
     '  __cache[id] = module\n' +
     '  __mods[id](require, module, module.exports)\n' +
@@ -91,9 +91,9 @@ function bundle() {
   return out + "return require('main')\n})()"
 }
 
-// Script que el juego ejecuta al empezar cada carga de la página, antes que su propio
-// código: src/hook.js (no usa require) y un chunk falso de webpack que corre en cuanto
-// carga chunk-vendors, antes que el juego, y le pasa a hook.js la función require.
+// Script the game runs at the start of every page load, before its own
+// code: src/hook.js (does not use require) and a fake webpack chunk that runs as soon as
+// chunk-vendors loads, before the game, and hands hook.js the require function.
 function early() {
   return [
     '(() => {',
@@ -109,23 +109,23 @@ function early() {
   ].join('\n')
 }
 
-// --check: empaqueta y compila (sin ejecutar) para detectar errores sin abrir el juego.
+// --check: bundles and compiles (without running) to catch errors without opening the game.
 function check() {
   const code = bundle()
   new Function(code)
   new Function(early())
   const locales = loadLocales()
-  console.log(`OK: ${listModules(SRC).length} módulos, ${Object.keys(locales).length} idiomas (${Object.keys(locales).join(', ')}), ${(code.length / 1024).toFixed(1)} KB.`)
+  console.log(`OK: ${listModules(SRC).length} modules, ${Object.keys(locales).length} languages (${Object.keys(locales).join(', ')}), ${(code.length / 1024).toFixed(1)} KB.`)
 }
 
-// --- Conexión con el juego --------------------------------------------------------
+// --- Connection to the game --------------------------------------------------------
 
 async function findGamePage() {
   const res = await fetch(`http://127.0.0.1:${PORT}/json/list`)
   const targets = await res.json()
   const page = targets.find(t => t.type === 'page' && /index\.html/.test(t.url))
     || targets.find(t => t.type === 'page')
-  if (!page) throw new Error('No se encontró la ventana del juego en el puerto de depuración.')
+  if (!page) throw new Error('Could not find the game window on the debugging port.')
   return page
 }
 
@@ -151,18 +151,18 @@ function connect(wsUrl) {
   })
   const opened = new Promise((resolve, reject) => {
     ws.onopen = resolve
-    ws.onerror = () => reject(new Error('No se pudo abrir el WebSocket de depuración.'))
+    ws.onerror = () => reject(new Error('Could not open the debugging WebSocket.'))
   })
   return { ws, send, opened, on: fn => listeners.add(fn) }
 }
 
 async function inject(send) {
-  // Se empaqueta en cada inyección, así los cambios en src/ se aplican al recargar.
+  // It is bundled on every injection, so changes in src/ apply on reload.
   const expression = bundle()
-  // Reintenta hasta que Vue y la partida estén listos.
+  // Retries until Vue and the save are ready.
   for (let i = 0; i < 60; i++) {
     const r = await send('Runtime.evaluate', { expression, returnByValue: true })
-    if (r.exceptionDetails) throw new Error(r.exceptionDetails.exception?.description || 'error al inyectar')
+    if (r.exceptionDetails) throw new Error(r.exceptionDetails.exception?.description || 'injection error')
     if (r.result.value === 'ok') return true
     await new Promise(res => setTimeout(res, 1000))
   }
@@ -170,51 +170,51 @@ async function inject(send) {
 }
 
 const sleep = ms => new Promise(res => setTimeout(res, ms))
-// Una respuesta del juego, o null si no contesta (p. ej. colgado).
+// A response from the game, or null if it does not answer (e.g. hung).
 const within = (p, ms) => Promise.race([p, sleep(ms).then(() => null)])
 
-// Estado de la página: ¿ya tiene la puerta de hook.js? ¿hay una partida cargada?
+// Page state: does it already have hook.js's gate? Is a save loaded?
 const PROBE = `({ early: !!window.__corEarly, hooked: !!window.__corReq?.c?.baa2?.exports?.__cor,
   loaded: !!document.querySelector('#app')?.__vue__?.$store?.state?.current?.id })`
 
-// Una conexión con el juego, hasta que se cierre.
+// One connection to the game, until it closes.
 async function session(page, dev) {
-  console.log(`Conectado a: ${page.title || page.url}`)
+  console.log(`Connected to: ${page.title || page.url}`)
   const { ws, send, opened, on } = connect(page.webSocketDebuggerUrl)
   await opened
   const closed = new Promise(res => { ws.onclose = res })
 
-  // hook.js en cada carga de la página, antes que el juego: así una partida con
-  // botones de una versión anterior del trainer no cuelga el juego al cargarse.
-  // Si el juego está colgado no contesta: se sigue igual (within) y se avisa abajo.
+  // hook.js on every page load, before the game: that way a save with
+  // buttons from an earlier version of Stemma doesn't hang the game on load.
+  // If the game is hung it doesn't answer: carry on anyway (within) and warn below.
   await within(send('Page.addScriptToEvaluateOnNewDocument', { source: early() }), 5000)
   await within(send('Page.enable'), 5000)
 
-  // Un error en src/ o locales/ se informa sin cerrar el trainer.
+  // An error in src/ or locales/ is reported without closing Stemma.
   const tryInject = async () => {
-    try { return await inject(send) } catch (e) { console.error('Error al inyectar el panel:', e.message); return false }
+    try { return await inject(send) } catch (e) { console.error('Error injecting the panel:', e.message); return false }
   }
   on(async msg => {
     if (msg.method === 'Page.loadEventFired') {
-      console.log('El juego recargó la página, reinyectando panel...')
-      if (await tryInject()) console.log('Panel listo (F8).')
+      console.log('The game reloaded the page, injecting the panel again...')
+      if (await tryInject()) console.log('Panel ready (F8).')
     }
   })
 
   const probe = await within(send('Runtime.evaluate', { expression: PROBE, returnByValue: true }), 5000)
   const state = probe?.result?.value
   if (!state) {
-    console.log('El juego no responde. Si se colgó al cargar una partida, ciérralo y vuelve a abrirlo:')
-    console.log('el trainer lo espera y lo prepara antes de que cargue la partida.')
+    console.log('The game is not responding. If it hung while loading a save, close it and open it again:')
+    console.log('Stemma waits for it and prepares it before the save loads.')
   } else if (!state.early && !state.hooked && !state.loaded) {
-    // El juego está empezando sin hook.js: se recarga una vez para que lo tenga.
-    console.log('Preparando el juego antes de que cargue la partida...')
+    // The game is starting without hook.js: reload once so it has it.
+    console.log('Preparing the game before the save loads...')
     await send('Page.reload')
-  } else if (await tryInject()) console.log('Panel listo. Pulsa F8 dentro del juego para mostrarlo u ocultarlo.')
-  else console.log('El juego aún no tiene una partida cargada; el panel aparecerá al recargar.')
+  } else if (await tryInject()) console.log('Panel ready. Press F8 inside the game to show or hide it.')
+  else console.log('The game has no save loaded yet; the panel will appear on reload.')
 
   if (dev) dev.inject = tryInject
-  console.log('Deja esta ventana abierta. Ctrl+C para salir.')
+  console.log('Leave this window open. Ctrl+C to quit.')
   await closed
 }
 
@@ -223,44 +223,44 @@ async function main() {
     try { return check() } catch (e) { console.error('Error:', e.message); process.exit(1) }
   }
 
-  // --dev: al guardar un archivo de src/ o locales/, reinyecta el panel (agrupando
-  // los cambios que llegan casi a la vez, p. ej. varios archivos guardados juntos).
+  // --dev: when a file in src/ or locales/ is saved, inject the panel again (grouping
+  // changes that arrive almost at once, e.g. several files saved together).
   const dev = process.argv.includes('--dev') ? { inject: null } : null
   if (dev) {
     let timer, changed = new Set()
     for (const dir of [SRC, LOCALES]) {
       watch(dir, { recursive: true }, (event, file) => {
-        if (!file || !/\.(js|json)$/.test(file)) return // ignora temporales de editores
+        if (!file || !/\.(js|json)$/.test(file)) return // ignore editor temp files
         changed.add(relative(ROOT, join(dir, file)).replace(/\\/g, '/'))
         clearTimeout(timer)
         timer = setTimeout(async () => {
           if (!dev.inject) return
-          console.log(`Cambios en ${[...changed].join(', ') || 'archivos'}: reinyectando panel...`)
+          console.log(`Changes in ${[...changed].join(', ') || 'files'}: injecting the panel again...`)
           changed = new Set()
-          if (await dev.inject()) console.log('Panel actualizado.')
+          if (await dev.inject()) console.log('Panel updated.')
         }, 200)
       })
     }
-    console.log('Modo desarrollo: los cambios en src/ y locales/ se aplican al guardar.')
+    console.log('Development mode: changes in src/ and locales/ apply when you save.')
   }
 
-  // Espera al juego (si todavía no está abierto) y vuelve a esperarlo si se cierra.
+  // Wait for the game (if it is not open yet) and wait again if it closes.
   for (let waiting = false; ; ) {
     let page = null
     try { page = await findGamePage() } catch {}
     if (!page) {
       if (!waiting) {
-        console.log(`Esperando al juego en el puerto ${PORT}...`)
-        console.log('(Steam -> juego -> Propiedades -> Opciones de lanzamiento: --remote-debugging-port=9222)')
+        console.log(`Waiting for the game on port ${PORT}...`)
+        console.log('(Steam -> game -> Properties -> Launch options: --remote-debugging-port=9222)')
         waiting = true
       }
       await sleep(250)
       continue
     }
     waiting = false
-    try { await session(page, dev) } catch (e) { console.error('Error de conexión:', e.message) }
+    try { await session(page, dev) } catch (e) { console.error('Connection error:', e.message) }
     if (dev) dev.inject = null
-    console.log('El juego se cerró.')
+    console.log('The game closed.')
     await sleep(1000)
   }
 }

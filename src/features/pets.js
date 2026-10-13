@@ -1,4 +1,4 @@
-// Mascotas: edad, habilidades y rasgos de las mascotas de la casa.
+// Pets: age, skills and traits of the household pets.
 const { el } = require('core/dom')
 const { t } = require('core/i18n')
 const game = require('game')

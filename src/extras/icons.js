@@ -1,9 +1,9 @@
-// Iconos de los botones del trainer dentro del juego, como data URI.
-// adopt, divorce, playAs, dynasty y scenario son los de los mods de ejemplo oficiales
+// Icons of Stemma's in-game buttons, as data URIs.
+// adopt, divorce, playAs, dynasty and scenario are those of the official example mods
 // (github.com/CitizenOfRomeDynastyAscendant/example-mods, Sathvik Software Solutions,
-// CC BY-NC-SA 4.0 con la condición "Commons Clause"). bank y matchmaker son de los
-// mods de peritiSumus (github.com/peritiSumus/CoR-Mods, dominio público). theme es
-// un dibujo propio, como province.
+// CC BY-NC-SA 4.0 with the "Commons Clause" condition). bank and matchmaker are from
+// peritiSumus's mods (github.com/peritiSumus/CoR-Mods, public domain). theme is
+// an original drawing, as is province.
 const svg = s => 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(s)
 
 module.exports = {

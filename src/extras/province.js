@@ -1,25 +1,25 @@
-// Gobierno de provincias. En el juego, los pro-magistrados (proConsul, proPraetor,
-// proAedile, proQuaestor) no cobran sueldo [0262]: el Senado nombra a un senador que ya
-// tuvo el cargo [e195] (flagProMagistracyAppointment = { post, year, month: 3 }) y el
-// mandato termina al Martius siguiente [3ca4]. En Roma, gobernar una provincia era la
-// forma de hacerse rico (y de terminar juzgado de repetundis).
+// Provincial governorships. In the game, pro-magistrates (proConsul, proPraetor,
+// proAedile, proQuaestor) earn no wage [0262]: the Senate appoints a senator who already
+// held the office [e195] (flagProMagistracyAppointment = { post, year, month: 3 }) and the
+// term ends at the following Martius [3ca4]. In Rome, governing a province was the
+// way to get rich (and to end up tried for repetundis).
 //
-// Al empezar un mandato de alguien de tu casa eliges cómo gobierna:
-//   honesto  = solo lo que le corresponde; al terminar gana prestigio e influencia.
-//   moderado = lo que se esperaba de un gobernador.
-//   rapaz    = el triple, con mucho más riesgo de juicio (Greedy: un 20% más).
-// Lo que saca se junta cada mes y llega al terminar el mandato. Si quien gobierna
-// muere, su familia se queda con lo juntado y no hay juicio. Si no, puede haber una
-// acusación de repetundis (ley Calpurnia, 149 a. C.): te defiendes solo, contratas a un
-// orador o sobornas al jurado; si te condenan, devuelves el doble (ley Acilia, 123 a. C.)
-// y pierdes prestigio e influencia.
-// Cuentan los atributos de quien gobierna: administración = cuánto saca; inteligencia =
-// lo oculta mejor (menos acusaciones); elocuencia = se defiende mejor en el juicio.
-// Honorable = la mitad de acusaciones.
+// When someone in your household starts a term you choose how they govern:
+//   honest     = only what is due to them; at the end they gain prestige and influence.
+//   moderate   = what was expected of a governor.
+//   rapacious  = triple, with much more risk of a trial (Greedy: 20% more).
+// What they take builds up every month and arrives when the term ends. If whoever governs
+// dies, their family keeps what was gathered and there is no trial. Otherwise there may be a
+// repetundis prosecution (Calpurnian law, 149 B.C.): you defend yourself, hire a
+// orator or bribe the jury; if convicted, you pay back double (Acilian law, 123 B.C.)
+// and lose prestige and influence.
+// The attributes of whoever governs count: stewardship = how much they take; intelligence =
+// hides it better (fewer prosecutions); eloquence = defends better at trial.
+// Honorable = half the prosecutions.
 const game = require('game')
 const FIN = require('extras/finance')
 
-const POSTS = { proConsul: 1500, proPraetor: 1000, proQuaestor: 450, proAedile: 300 } // por mes, moderado
+const POSTS = { proConsul: 1500, proPraetor: 1000, proQuaestor: 450, proAedile: 300 } // per month, moderate
 const LEVELS = {
   honest: { take: 0.25, trial: 0.03 },
   moderate: { take: 1, trial: 0.15 },
@@ -31,12 +31,12 @@ const PROVINCES = {
 }
 PROVINCES.proQuaestor = PROVINCES.proPraetor
 PROVINCES.proAedile = ['Ostia (annona)', 'Puteoli (annona)', 'Campania']
-// Juicio: condena sin ayuda (con elocuencia 20) y lo que hace cada defensa.
+// Trial: conviction without help (with eloquence 20) and what each defense does.
 const CONVICT = 0.5
 const DEFENSES = {
   self: { cost: 0, factor: 1 },
-  orator: { cost: 0.1, factor: 0.5 }, // un gran orador cobra el 10% de lo juntado
-  bribe: { cost: 0.25, factor: 0.3, exposed: 0.25 }, // sobornar al jurado: puede saberse
+  orator: { cost: 0.1, factor: 0.5 }, // a great orator charges 10% of what was gathered
+  bribe: { cost: 0.25, factor: 0.3, exposed: 0.25 }, // bribing the jury: it may come out
 }
 const RESTITUTION = 2
 const PENALTY = { prestige: 0.1, influence: 0.25, bribe: 0.05 }
@@ -46,7 +46,7 @@ const S = () => game.S()
 const data = () => FIN.data()
 const save = d => game.DA.api().setGlobalFlag({ flag: 'trainerFinance', data: d })
 const keyOf = (ch, flag) => ch.id + ':' + flag.post + ':' + flag.year
-// Miembros de la casa con un mandato en curso.
+// Household members with a term in progress.
 const governors = () => game.household().filter(ch => POSTS[ch.job] && ch.flagProMagistracyAppointment?.post === ch.job)
 
 const monthly = (post, level, ch) => POSTS[post] * LEVELS[level].take * FIN.better('stewardship', 0.25, ch) *
@@ -54,11 +54,11 @@ const monthly = (post, level, ch) => POSTS[post] * LEVELS[level].take * FIN.bett
 const trialChance = (level, ch) => Math.min(0.9, LEVELS[level].trial * FIN.worse('intelligence', 0.5, ch) * (FIN.has('honorable', ch) ? 0.5 : 1))
 const convictChance = (ch, defense) => Math.min(0.95, CONVICT * FIN.worse('eloquence', 1, ch) * DEFENSES[defense].factor)
 const defenseCost = (rec, defense) => Math.round(rec.accrued * DEFENSES[defense].cost)
-// Estimación para las opciones de la ventana (un año de mandato).
+// Estimate for the window's options (one year of term).
 const estimate = (rec, level) => { const ch = S().characters[rec.id]; return ch ? { year: Math.round(monthly(rec.post, level, ch) * 13), trial: trialChance(level, ch) } : null }
 
-// Cada mes: mandatos nuevos (para preguntar cómo gobernar), lo juntado y los que
-// terminan. Devuelve { ask: [rec], ended: [{ rec, trial }] }.
+// Every month: new terms (to ask how to govern), what has been gathered and those that
+// end. Returns { ask: [rec], ended: [{ rec, trial }] }.
 function check() {
   const out = { ask: [], ended: [] }
   if (FIN.busy()) return out
@@ -73,13 +73,13 @@ function check() {
     }
     const rec = d.provinces[key]
     if (!rec.level && !rec.asked) { rec.asked = true; out.ask.push(rec); changed = true }
-    if (rec.month < now) { // un mes más de mandato
+    if (rec.month < now) { // one more month of term
       rec.accrued += monthly(rec.post, rec.level || 'moderate', ch) * FIN.rnd(0.8, 1.2) * (now - rec.month)
       rec.month = now
       changed = true
     }
   }
-  // Terminaron: quien gobernaba ya no tiene ese mandato (o murió).
+  // Ended: whoever governed no longer has that term (or died).
   const active = new Set(governors().map(ch => keyOf(ch, ch.flagProMagistracyAppointment)))
   for (const rec of Object.values(d.provinces)) {
     if (rec.ended || active.has(rec.key)) continue
@@ -98,7 +98,7 @@ function check() {
     out.ended.push({ rec, trial })
     changed = true
   }
-  // Se olvidan los mandatos de hace más de 5 años.
+  // Terms from more than 5 years ago are forgotten.
   for (const [k, rec] of Object.entries(d.provinces)) if (rec.ended && !rec.trial && now - rec.month > 65) { delete d.provinces[k]; changed = true }
   if (changed) save(d)
   return out
@@ -112,7 +112,7 @@ function choose(key, level) {
   return rec
 }
 
-// Resuelve el juicio (el costo de la defensa lo cobra la ventana). Devuelve el resultado.
+// Resolves the trial (the window charges the defense's cost). Returns the result.
 function trial(key, defense) {
   const d = data(), rec = d.provinces[key], s = S()
   if (!rec?.trial || !DEFENSES[defense]) return null
@@ -136,7 +136,7 @@ function trial(key, defense) {
   return out
 }
 
-// Mandatos para el panel: en curso y juicios pendientes.
+// Terms for the panel: in progress and pending trials.
 const list = () => Object.values(data().provinces).filter(r => !r.ended || r.trial)
 const pendingTrials = () => Object.values(data().provinces).filter(r => r.trial)
 

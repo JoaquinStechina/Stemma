@@ -1,26 +1,26 @@
-// Acceso al juego. Es el ÚNICO archivo (con hook.js, que también se ejecuta solo)
-// que conoce los identificadores internos del juego (módulos de webpack) y la forma
-// de su estado Vuex: si una actualización del juego rompe algo, se arregla aquí.
+// Access to the game. It is the ONLY file (with hook.js, which also runs on its own)
+// that knows the game's internal identifiers (webpack modules) and the shape
+// of its Vuex state: if a game update breaks something, fix it here.
 //
-// Se usan las mismas funciones que usa el juego (rasgos, nivel de trabajo,
-// multiplicadores…), así se aplican sus efectos secundarios. No activa el
-// modo mods, así que los logros siguen activos.
+// The same functions the game uses are used (traits, job level,
+// multipliers…), so their side effects apply. It does not turn on
+// mod mode, so achievements stay active.
 
 const hook = require('hook')
 
-// --- Estado Vuex ---------------------------------------------------------------
+// --- Vuex state ---------------------------------------------------------------
 const store = () => document.querySelector('#app')?.__vue__?.$store
 const S = () => store()?.state
 const player = () => { const s = S(); return s?.characters?.[s.current.id] }
 const dynasty = () => { const s = S(), p = player(); return p && s.dynasties?.[p.dynastyId] }
 
-// Asignar una clave que el objeto aún no tiene, de forma que Vue la vea (Vue 2).
+// Assign a key the object doesn't have yet, in a way Vue sees (Vue 2).
 const setReactive = (obj, key, value) => {
   if (key in obj) obj[key] = value
   else store()._vm.$set(obj, key, value)
 }
 
-// Miembros vivos de la casa (tú primero).
+// Living household members (you first).
 const household = () => {
   const s = S()
   if (!s) return []
@@ -28,7 +28,7 @@ const household = () => {
   return [...new Set(ids)].map(id => s.characters[id]).filter(c => c && !c.isDead)
 }
 
-// Todas las mascotas conocidas, y las vivas de la casa y de sus miembros.
+// All known pets, and the living ones of the household and its members.
 const pets = () => S()?.current?.pets || {}
 const householdPets = () => {
   const s = S()
@@ -38,8 +38,8 @@ const householdPets = () => {
   return [...new Set(ids)].map(id => pets()[id]).filter(p => p && !p.isDead)
 }
 
-// --- Módulos internos (webpack) --------------------------------------------------
-// Se registra un "chunk" falso para obtener la función require de webpack.
+// --- Internal modules (webpack) --------------------------------------------------
+// A fake "chunk" is registered to get webpack's require function.
 function gameRequire() {
   if (window.__corReq) return window.__corReq
   const key = Object.keys(window).find(k => /^webpackJsonp/.test(k))
@@ -48,28 +48,28 @@ function gameRequire() {
   window[key].push([[mid], { [mid]: (m, e, r) => { window.__corReq = r } }, [[mid]]])
   return window.__corReq || null
 }
-// Cada grupo es null si no se pudo cargar (p. ej. otra versión del juego).
-const load = (what, fn) => { try { return fn(gameRequire()) } catch (e) { console.warn('[trainer] ' + what + ' no disponible', e); return null } }
+// Each group is null if it could not be loaded (e.g. another game version).
+const load = (what, fn) => { try { return fn(gameRequire()) } catch (e) { console.warn('[stemma] ' + what + ' not available', e); return null } }
 
-// Rasgos de personajes: definiciones, títulos y las funciones del juego para
-// añadir/quitar (aplican los bonus de habilidad y quitan los opuestos).
-// Rasgos acumulables (isStackable): volver a añadir uno que ya se tiene suma
-// copias en ch.traitStackCount, y cada copia extra suma traitStackMultiplier (10%)
-// del bonus de habilidad; quitarlo sin forzar resta una copia.
-const TR = load('rasgos', req => {
+// Character traits: definitions, titles and the game's functions to
+// add/remove (they apply skill bonuses and remove opposites).
+// Stackable traits (isStackable): adding one you already have adds
+// copies in ch.traitStackCount, and each extra copy adds traitStackMultiplier (10%)
+// of the skill bonus; removing it without forcing subtracts a copy.
+const TR = load('traits', req => {
   const defs = req('50ab').default()
   const addTrait = req('a822').a, removeTrait = req('cc6f').a
   const discoverable = defs.discoverable || []
   const add = (ch, id) => {
     addTrait(S(), ch.id, id)
-    // Los rasgos "descubribles" no se muestran en el juego hasta descubrirlos.
+    // The "discoverable" traits are not shown in the game until discovered.
     if (discoverable.includes(id)) {
       ch.discoveredTraits = ch.discoveredTraits || []
       if (!ch.discoveredTraits.includes(id)) ch.discoveredTraits.push(id)
     }
   }
   const remove = (ch, id) => removeTrait(S(), ch.id, id, true)
-  // Copias que tiene: 0 si no lo tiene; el juego guarda 0 o nada cuando hay una.
+  // Copies it has: 0 if it does not have it; the game stores 0 or nothing when there is one.
   const stacks = (ch, id) => ch?.traits?.includes(id) ? Math.max(1, ch.traitStackCount?.[id] || 0) : 0
   const setStacks = (ch, id, n) => {
     n = Math.max(0, Math.min(99, Math.floor(n)))
@@ -85,88 +85,88 @@ const TR = load('rasgos', req => {
     stackMultiplier: req('7de9').default.traitStackMultiplier, stacks, setStacks }
 })
 
-// Premios y castigos de los eventos (applyStatChanges [2ee0]): si el evento lo
-// pide (scaleByRevenue), dinero × ingresos, influencia × ingresos/8 y prestigio ×
-// ingresos/10 [14ef]; y siempre × el factor de clase [cfed].
-const STATS = load('escalado', req => {
+// Rewards and punishments of events (applyStatChanges [2ee0]): if the event
+// asks for it (scaleByRevenue), money × income, influence × income/8 and prestige ×
+// income/10 [14ef]; and always × the class factor [cfed].
+const STATS = load('scaling', req => {
   const revenue = req('14ef').default, classFactor = req('cfed').default
   const DIV = { cash: 1, influence: 8, prestige: 10 }
   return { real: (kind, base, scaled) => base * (scaled ? revenue(S()) / DIV[kind] : 1) * classFactor(S()),
     signature: () => revenue(S()) + ':' + classFactor(S()) }
 })
 
-// Ventana de evento abierta en el juego: { show, title, message, options }.
+// Event window open in the game: { show, title, message, options }.
 const modal = () => S()?.interactionModal
 
-// Edad en años a partir de mes/año de nacimiento (calendario de 13 meses).
-const AGE = load('edad', req => req('9b55').default)
+// Age in years from birth month/year (13-month calendar).
+const AGE = load('age', req => req('9b55').default)
 
-// Trabajos: definiciones (maxLevel), nombres y la función que fija el nivel
-// (lo limita a [0, maxLevel] y recalcula al personaje).
-const JOBS = load('trabajos', req => ({ types: req('0262').default.types, titles: req('c9c8').default.titles || {}, set: req('6cf7').a }))
+// Jobs: definitions (maxLevel), names and the function that sets the level
+// (it limits it to [0, maxLevel] and recalculates the character).
+const JOBS = load('jobs', req => ({ types: req('0262').default.types, titles: req('c9c8').default.titles || {}, set: req('6cf7').a }))
 
-// Mascotas: tipos (especie, edad adulta, esperanza de vida), rasgos y sus funciones.
-const PETS = load('mascotas', req => {
+// Pets: types (species, adult age, life expectancy), traits and their functions.
+const PETS = load('pets', req => {
   const P = req('ed26').a
   return { types: P.types || {}, traitList: P.traits.list, traitTitles: req('c7db').default.traits || {},
     add: (p, id) => req('d6d3').a({ state: S(), petId: p.id, trait: id }),
     remove: (p, id) => req('d217').a({ state: S(), petId: p.id, trait: id, forceClearStack: true }) }
 })
 
-// Propiedades: tipos, grupos, nombres y el límite administrable de cada una.
-const PROPS = load('propiedades', req => {
+// Properties: types, groups, names and the manageable limit of each.
+const PROPS = load('properties', req => {
   const P = req('08e5').default, L = req('5785').default
   return { types: P.types, groups: P.groups, titles: L.types || {}, groupTitles: L.groups || {}, max: k => req('40cf').default(S(), k) }
 })
 
-// Multiplicadores (modificadores): añadir/quitar por clave e id, y el valor total
-// (producto de los activos; el juego lo cachea ~1 s).
-const MODS = load('multiplicadores', req => ({
+// Multipliers (modifiers): add/remove by key and id, and the total value
+// (product of the active ones; the game caches it for ~1 s).
+const MODS = load('multipliers', req => ({
   add: (key, id, factor, description) => req('dbe5').default(S(), { key, id, factor, description }),
   remove: (key, id) => req('f761').a(S(), key, id),
   value: key => req('fc68').a(S(), { key }),
   propTypes: req('08e5').default.types, propTitles: req('5785').default.types || {},
 }))
 
-// Logros: lista, grupos y nombres. Los conseguidos están en state.achievements
-// (global, el juego lo guarda en localStorage.core) y los de la partida actual en
-// current.flagAchievementsThisRun (se guarda con la partida).
-const ACH = load('logros', req => {
+// Achievements: list, groups and names. The obtained ones are in state.achievements
+// (global, the game saves it in localStorage.core) and those of the current game in
+// current.flagAchievementsThisRun (saved with the game).
+const ACH = load('achievements', req => {
   const D = req('06d5').a, L = req('a550').default
   return { list: D.list, groups: D.groups, titles: typeof L === 'function' ? L() : L }
 })
 
-// API de mods del juego (daapi) [6174], creada como la usa el propio juego en sus
-// eventos (isDAAPI: false, p. ej. household/enforceAusterity [ea0b]). Así no se
-// activa el modo mods (setupDAAPI [e35e]), que marca la partida con
-// current.flagUsedMods y bloquea los logros para siempre [c391]. api() se crea en
-// cada uso porque se queda con el estado con el que se creó (cargar una partida lo
-// reemplaza). newId() genera ids como los del juego [e381].
+// The game's mods API (daapi) [6174], created the way the game itself uses it in its
+// events (isDAAPI: false, e.g. household/enforceAusterity [ea0b]). That way mod mode
+// is not turned on (setupDAAPI [e35e]), which marks the save with
+// current.flagUsedMods and blocks achievements forever [c391]. api() is created on
+// every use because it keeps the state it was created with (loading a game replaces
+// it). newId() generates ids like the game's [e381].
 const DA = load('daapi', req => {
   const make = req('6174').a
   return { api: () => make({ state: S(), dispatch: store().dispatch, commit: store().commit }, { isDAAPI: false }), newId: req('e381').default }
 })
 
-// Eventos del trainer dentro del juego (ver hook.js). stemma.mjs ya lo instala al
-// empezar la página; aquí también, por si el juego se abrió antes que el trainer.
-const HOOK = load('eventos', req => {
+// Stemma's events inside the game (see hook.js). stemma.mjs already installs it at
+// the start of the page; here too, in case the game was opened before Stemma.
+const HOOK = load('events', req => {
   hook.install(req)
   return { register: (name, ev) => { window.__corEvents[name] = ev }, call: hook.call, ours: hook.ours }
 })
 
-// Nombres de las clases sociales (current.class 0–7: Proletarii … Equites, Senatores).
-// La clase sale del patrimonio [5485]; Senatores es aparte (flagIsSenetorialClass).
-const CLASSES = load('clases', req => req('83de').default.classes)
+// Names of the social classes (current.class 0–7: Proletarii … Equites, Senatores).
+// Class comes from wealth [5485]; Senatores is separate (flagIsSenetorialClass).
+const CLASSES = load('classes', req => req('83de').default.classes)
 
-// Patrimonio. La clase sale del efectivo más el valor de las propiedades [5485, 0698]
-// (lo que está en el argentarius no cuenta). El efectivo tiene un tope [625b]: 9819 ×
-// la administración de la casa [20e3], y por clase hasta Class I; de vez en cuando el
-// juego se lleva lo que pasa del tope ("Greed", "Theft"…) o lo quita sin avisar [f93d].
+// Wealth. Class comes from cash plus the value of properties [5485, 0698]
+// (what is in the argentarius doesn't count). Cash has a cap [625b]: 9819 ×
+// the household stewardship [20e3], and by class up to Class I; from time to time the
+// game takes what is over the cap ("Greed", "Theft"…) or removes it without warning [f93d].
 const WEALTH_STEPS = [1100, 2500, 5000, 7500, 10000, 25000] // [5485]
-const WEALTH = load('patrimonio', req => ({
+const WEALTH = load('wealth', req => ({
   cashCap: () => req('625b').default(S()),
   propertyValue: () => req('0698').default(S()),
-  // Clase que tendría la familia con este efectivo (Senatores no depende del dinero).
+  // Class the family would have with this cash (Senatores does not depend on money).
   classFor: cash => {
     if (S().current.flagIsSenetorialClass) return 7
     const w = req('0698').default(S()) + cash, i = WEALTH_STEPS.findIndex(x => w < x)
@@ -174,21 +174,21 @@ const WEALTH = load('patrimonio', req => ({
   },
 }))
 
-// Candidatos a pareja de la ventana "Arrange Betrothal" (MarriageView). El juego los
-// genera con [6d52] (dinastía, dote, personalidad, a veces mascota y trato
-// matrimonial), los guarda en current.generatedPotentialSpouseCharacterIds con
+// Spouse candidates of the "Arrange Betrothal" window (MarriageView). The game
+// generates them with [6d52] (dynasty, dowry, personality, sometimes a pet and a
+// marriage deal), stores them in current.generatedPotentialSpouseCharacterIds with
 // flagGeneratedPotentialSpouse = { targetCharacterId, isMatrilineal, month, year },
-// muestra los 10 primeros válidos [1eff] (válido = [deda]: soltero, edad casadera…)
-// y los borra a los 6 meses [9427].
-const SPOUSES = load('pareja', req => ({
+// shows the first 10 valid ones [1eff] (valid = [deda]: single, marriageable age…)
+// and deletes them after 6 months [9427].
+const SPOUSES = load('spouse', req => ({
   generate: (n, targetId, isMatrilineal) => req('6d52').default(S(), n, targetId, !!isMatrilineal),
   list: (targetId, isMatrilineal) => req('1eff').default(S(), targetId, false, !!isMatrilineal),
   valid: ch => !!req('deda').default(S(), ch),
 }))
 
-// La ventana "Arrange Betrothal" abierta: a quién se busca pareja, si es matrilineal
-// (casilla de la ventana) y la caja de acciones del personaje (donde está "Pay to
-// look for other matches"; el juego no la muestra con deudas o sin dinero).
+// The open "Arrange Betrothal" window: who a spouse is being sought for, whether it is matrilineal
+// (window checkbox) and the character's actions box (where "Pay to
+// look for other matches" is; the game does not show it with debts or without money).
 const betrothalView = () => {
   if (document.querySelector('#app')?.__vue__?.$route?.name !== 'MarriageView') return null
   const main = document.querySelector('.container-main'), view = main?.__vue__
@@ -196,9 +196,9 @@ const betrothalView = () => {
   return { targetId: S().selectedMarriageCharacterId, isMatrilineal: !!view.isMatrilineal, actions: main.querySelector('.character-actions') }
 }
 
-// Marca o desmarca logros como conseguidos dentro del juego (para Steam, ver
-// unlockSteam). No se usa la acción addAchievement del juego porque tiene efectos
-// secundarios (cuenta el logro en la partida y a veces quita Stressed/Depressed).
+// Marks or unmarks achievements as obtained inside the game (for Steam, see
+// unlockSteam). The game's addAchievement action is not used because it has side
+// effects (it counts the achievement in the game and sometimes removes Stressed/Depressed).
 const setAchievements = (ids, on) => {
   const list = S().achievements
   for (const id of ids) {
@@ -206,15 +206,15 @@ const setAchievements = (ids, on) => {
     if (on && i < 0) list.push(id)
     if (!on && i >= 0) list.splice(i, 1)
   }
-  // Se guarda como hace el juego al guardar partida, pero solo la lista de logros.
+  // Saved as the game does when saving, but only the achievements list.
   try {
     const core = JSON.parse(localStorage.core || '{}')
     core.achievements = [...list]
     localStorage.core = JSON.stringify(core)
-  } catch (e) { console.warn('[trainer] no se pudo guardar la lista de logros', e) }
+  } catch (e) { console.warn('[stemma] could not save the achievements list', e) }
 }
 
-// Marca o desmarca un logro como conseguido en la partida actual.
+// Marks or unmarks an achievement as obtained in the current game.
 const setAchievementThisRun = (id, on) => {
   const c = S().current
   if (!c.flagAchievementsThisRun) setReactive(c, 'flagAchievementsThisRun', [])
@@ -230,11 +230,11 @@ const setAchievementThisRun = (id, on) => {
   }
 }
 
-// Desbloquea logros en Steam con el mismo mensaje que usa addAchievement [c391]:
-// el proceso principal los activa con Steamworks (si ya lo están, no hace nada).
-// Como el juego, no envía nada en modo fácil, sandbox o con mods, ni con los logros
-// desactivados en sus ajustes. Devuelve '' o el motivo ('noSteam', 'apiOff', 'mode').
-// Los logros de Steam no se pueden quitar.
+// Unlocks achievements on Steam with the same message addAchievement uses [c391]:
+// the main process activates them with Steamworks (if already active, it does nothing).
+// Like the game, it sends nothing in easy mode, sandbox mode or with mods, nor with achievements
+// turned off in its settings. Returns '' or the reason ('noSteam', 'apiOff', 'mode').
+// Steam achievements cannot be removed.
 const steamBlocked = () => {
   const s = S()
   if (!window.ipcRenderer?.send) return 'noSteam'
@@ -248,10 +248,10 @@ const unlockSteam = ids => {
   return why
 }
 
-// Elige la opción `i` de la ventana de evento abierta, igual que al pulsarla
-// (acción processInteractionModalAction). Las primeras llamadas a Math.random
-// devuelven `rolls` en orden, para forzar el resultado; el juego decide el azar
-// en ese mismo momento, y las llamadas siguientes vuelven a ser al azar.
+// Picks option `i` of the open event window, just as when pressing it
+// (processInteractionModalAction action). The first calls to Math.random
+// return `rolls` in order, to force the outcome; the game decides the random element
+// at that very moment, and later calls are random again.
 const chooseOption = (i, rolls = []) => {
   const opt = modal()?.options?.[i]
   if (!modal()?.show || !opt || opt.disabled) return false
@@ -262,10 +262,10 @@ const chooseOption = (i, rolls = []) => {
   return true
 }
 
-// Edad actual en años de un personaje o mascota.
+// Current age in years of a character or pet.
 const ageOf = x => AGE ? AGE(S(), x.birthMonth, x.birthYear) : S().year - x.birthYear
 
-// A partir de ~27 las fórmulas del juego ya dan el máximo (99%) en habilidades.
+// From ~27 the game's formulas already give the maximum (99%) in skills.
 const SKILL_MAX = 30
 
 module.exports = {

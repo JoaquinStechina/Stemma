@@ -1,5 +1,5 @@
-// Secciones del panel, en su orden por defecto (el jugador puede reordenarlas).
-// Para añadir una sección: crea features/<nombre>.js (ver docs/desarrollo.md) y añádela aquí.
+// Panel sections, in their default order (the player can reorder them).
+// To add a section: create features/<name>.js (see docs/development.md) and add it here.
 module.exports = [
   require('features/resources'),
   require('features/family'),

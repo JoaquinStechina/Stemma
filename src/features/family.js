@@ -1,4 +1,4 @@
-// Familia: edad, habilidades, nivel de trabajo y rasgos de cada miembro de la casa.
+// Family: age, skills, job level and traits of each household member.
 const { el } = require('core/dom')
 const { t } = require('core/i18n')
 const game = require('game')
@@ -25,7 +25,7 @@ module.exports = {
     ui.button(bulk, t('allTo') + ' ' + SKILL_MAX, () => { for (const k of SKILLS) selected().skills[k] = SKILL_MAX })
     ui.button(bulk, t('familyAllTo') + ' ' + SKILL_MAX, () => game.household().forEach(ch => { for (const k of SKILLS) ch.skills[k] = SKILL_MAX }))
 
-    // Nivel de trabajo: la función del juego lo limita al máximo de cada trabajo.
+    // Job level: the game's function limits it to each job's maximum.
     const jobMax = () => { const ch = selected(); return (ch?.job && JOBS?.types[ch.job]?.maxLevel) || 0 }
     const setJobLevel = v => {
       const ch = selected()

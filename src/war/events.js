@@ -1,31 +1,31 @@
-// Árboles de decisión de los eventos militares del juego (v1.6.36), copiados de
-// su código (módulos 'war/<evento>'). Si una actualización cambia un evento,
-// se corrige aquí.
+// Decision trees of the game's military events (v1.6.36), copied from
+// its code ('war/<event>' modules). If an update changes an event,
+// fix it here.
 //
-// Cada evento: quién lo recibe (who: 'soldier' | 'commander'), el primer aviso
-// (start, o starts por tipo de personaje) y sus pasos (steps). Un paso es un
-// método del juego: la clave es su nombre, o 'método:contexto' cuando el juego le
-// pasa context.examine / context.type y eso cambia el resultado.
+// Each event: who receives it (who: 'soldier' | 'commander'), the first notice
+// (start, or starts by character type) and its steps. A step is a
+// game method: the key is its name, or 'method:context' when the game
+// passes it context.examine / context.type and that changes the result.
 //
-// Un paso es una lista de ramas al azar: { p, ...efectos, options }.
-//   p        probabilidad (número o función del personaje); si falta, 1.
-//   efectos  pr / inf / cash (prestigio, influencia, dinero; sc = cuáles escala el
-//            juego por ingresos, por defecto prestigio e influencia), death,
-//            crown (rasgo de la corona; también da su logro), traits (lista de
-//            rasgos o función del personaje), endWar (adelanta el fin de la
-//            guerra), endTerm (termina tu servicio militar), exile.
-//   options  la ventana siguiente: [{ text, to, st }]; `to` es el paso al que
-//            lleva (nada = sin consecuencias) y `st` lo que cambia al pulsarla.
-//   roll     en los pasos con azar, los valores que tiene que devolver Math.random
-//            (en orden, uno por llamada del método del juego) para que salga
-//            esta rama. Lo usa "forzar resultado" del consejo (game.chooseOption).
+// A step is a list of random branches: { p, ...effects, options }.
+//   p        probability (a number or a function of the character); 1 if missing.
+//   effects  pr / inf / cash (prestige, influence, money; sc = which ones the
+//            game scales by income, prestige and influence by default), death,
+//            crown (the crown trait; it also gives its achievement), traits (list of
+//            traits or a function of the character), endWar (brings the end of the
+//            war forward), endTerm (ends your military service), exile.
+//   options  the next window: [{ text, to, st }]; `to` is the step it
+//            leads to (nothing = no consequences) and `st` what changes when pressing it.
+//   roll     in steps with a random element, the values Math.random has to return
+//            (in order, one per call of the game's method) for this branch to come
+//            out. Used by the advice's "force outcome" (game.chooseOption).
 
 const SCALED = ['prestige', 'influence']
 const ALL = ['prestige', 'influence', 'cash']
-const HI = 0.9999 // tirada alta (las comparaciones del juego son > 0,x o < 0,x)
+const HI = 0.9999 // high roll (the game's comparisons are > 0.x or < 0.x)
 
-// Heridas que dependen de las que ya se tienen.
-const leg = ch => ch?.traits?.includes('noLeg') ? [] : ch?.traits?.includes('oneLeg') ? ['noLeg'] : ['oneLeg'] // con noLeg el juego intenta 'severlyMangled', que no existe
+// Wounds that depend on the ones already held.
+const leg = ch => ch?.traits?.includes('noLeg') ? [] : ch?.traits?.includes('oneLeg') ? ['noLeg'] : ['oneLeg'] // with noLeg the game tries 'severlyMangled', which does not exist
 const hand = (ch, worst = 'mangled') => ch?.traits?.includes('noHand') ? [worst] : ch?.traits?.includes('oneHand') ? ['noHand'] : ['oneHand']
 const eye = ch => ch?.traits?.includes('oneEyed') ? ['blind'] : ['oneEyed']
 const has = (ch, id) => !!ch?.traits?.includes(id)
@@ -167,8 +167,8 @@ const EVENTS = {
         { text: "We'll take them headon. Charge at the enemy!", to: 'result:charge' },
         { text: "We'll attack them from all sides. Split our troops!", to: 'result:split' },
       ] }],
-      // Éxito si aleatorio + (habilidades)/100 > 0,8 (Strong lo asegura al cargar). El juego
-      // tira dos veces (una para cargar y otra para dividir) antes de mirar cuál elegiste.
+      // Success if random + (skills)/100 > 0.8 (Strong guarantees it when charging). The game
+      // rolls twice (once to charge and once to split) before looking at which you chose.
       'result:charge': [
         { p: ch => has(ch, 'strong') ? 1 : clamp(0.2 + (sk(ch, 'combat') + sk(ch, 'eloquence')) / 100), roll: [HI, HI], options: [{ text: 'No one can best the Roman army!', to: 'outcome:victory' }] },
         { p: ch => has(ch, 'strong') ? 0 : 1 - clamp(0.2 + (sk(ch, 'combat') + sk(ch, 'eloquence')) / 100), roll: [0, 0], options: [{ text: 'I will not fail my men!', to: 'probable' }] },
@@ -181,7 +181,7 @@ const EVENTS = {
         { text: 'Keep Fighting! Our fellow Romans need us!', to: 'finalStand' },
         { text: 'We cannot hold for much longer. Retreat!', to: 'outcome:retreat' },
       ] }],
-      // Éxito si aleatorio/3 + (combate + elocuencia)/120 > 0,95.
+      // Success if random/3 + (combat + eloquence)/120 > 0.95.
       finalStand: [
         { p: ch => clamp(1 - 3 * (0.95 - (sk(ch, 'combat') + sk(ch, 'eloquence')) / 120)), roll: [HI], options: [{ text: 'No one can best the Roman army!', to: 'outcome:victory' }] },
         { p: ch => 1 - clamp(1 - 3 * (0.95 - (sk(ch, 'combat') + sk(ch, 'eloquence')) / 120)), roll: [0], options: [
@@ -189,7 +189,7 @@ const EVENTS = {
           { text: 'I will stand my ground and fight!', to: 'outcome:pSafety' },
         ] },
       ],
-      // outcome tira una vez (resistir) antes de mirar el tipo; huir tira otra.
+      // outcome rolls once (hold on) before looking at the type; fleeing rolls another.
       'outcome:victory': [{ crown: 'coronaObsidimalis', inf: 100, pr: 100, cash: 500, sc: ALL, endWar: true }],
       'outcome:retreat': [{ inf: -20, pr: -20, endWar: true }],
       'outcome:pSafety': [
@@ -255,8 +255,8 @@ const EVENTS = {
     },
   },
 
-  // Desfile triunfal: llega tras ganar la Corona Triumphalis, ya en paz. El
-  // contexto 'wood' (tableaux baratos) se arrastra hasta procession2.
+  // Triumphal parade: comes after winning the Corona Triumphalis, already at peace. The
+  // 'wood' context (cheap tableaux) carries over to procession2.
   'war/coronaTriumphalisII': {
     who: 'triumph', title: 'Triumphator',
     start: [

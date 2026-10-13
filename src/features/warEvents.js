@@ -1,7 +1,7 @@
-// Eventos militares: el árbol de decisiones de cada evento de guerra del juego,
-// con lo que puede pasar en cada opción (muerte, corona, heridas, prestigio…).
-// Además, cuando uno de estos eventos aparece en el juego, muestra un consejo al
-// lado de la ventana y marca la opción recomendada (ver war/analyze).
+// Military events: the decision tree of each of the game's war events,
+// with what can happen in each option (death, crown, wounds, prestige…).
+// Also, when one of these events appears in the game, it shows advice next to
+// the window and marks the recommended option (see war/analyze).
 const { el } = require('core/dom')
 const { t } = require('core/i18n')
 const ls = require('core/storage')
@@ -20,7 +20,7 @@ const big = v => {
 }
 const traitTitle = id => game.TR?.titles[id]?.title || id
 
-// Resumen → partes de texto con color, p. ej. "☠ 70% muerte", "Prestigio +23K".
+// Summary → colored text parts, e.g. "☠ 70% death", "Prestige +23K".
 function parts(s) {
   const out = []
   if (s.death >= 0.005) out.push(['☠ ' + pct(s.death) + ' ' + t('warDeath'), '#e38a7a'])
@@ -55,7 +55,7 @@ module.exports = {
     document.getElementById(ADVISOR_ID)?.remove()
     const ch = () => game.player()
 
-    // Interruptor del consejo en el juego.
+    // Switch for the in-game advice.
     const toggle = el('label', 'display:flex;align-items:center;gap:6px;cursor:pointer;margin:2px 0', body)
     const cb = el('input', 'margin:0;cursor:pointer', toggle)
     cb.type = 'checkbox'
@@ -64,7 +64,7 @@ module.exports = {
     cb.onchange = () => { ls.set(ADVISOR_KEY, cb.checked); ui.refresh(true) }
     ui.note(body, t('warLegend'))
 
-    // Árboles de referencia, uno por evento, en columnas.
+    // Reference trees, one per event, in columns.
     const grid = el('div', 'display:grid;grid-template-columns:repeat(auto-fit,minmax(380px,1fr));column-gap:22px;align-items:start', body)
     const trees = Object.entries(EVENTS).map(([evId, ev]) => {
       const crown = ev.crown ? ' · 👑 ' + traitTitle(ev.crown) : ''
@@ -83,7 +83,7 @@ module.exports = {
         partsLine(row, sums[i])
         const crown = crownPath(evId, o, ch(), sums[i])
         if (crown) partsLine(row, crown, t('warCrownPath'))
-        // Un final directo (una sola rama, sin más ventanas) ya está en la línea de arriba.
+        // A direct ending (a single branch, no more windows) is already on the line above.
         if (!o.to || isFinal(evId, o.to)) return
         if (seen.has(o.to)) { const n = el('div', 'font-size:11px;opacity:.6;margin-left:10px', row); n.textContent = t('warSeeAbove'); return }
         seen.add(o.to)
@@ -115,26 +115,26 @@ module.exports = {
       } else renderOptions(box, evId, ev.start, new Set())
     }
 
-    // Las cifras dependen de los ingresos, la clase y (en la Corona de Hierba) de
-    // las habilidades y heridas del personaje: se rehacen solo si eso cambia.
+    // The figures depend on income, class and (in the Grass Crown) on
+    // the character's skills and wounds: they are rebuilt only if those change.
     let treeSig = ''
     const sigOf = () => { const c = ch(); return (game.STATS?.signature() || '') + '|' + (c ? c.id + JSON.stringify(c.skills) + c.traits.join(',') : '') }
     ui.onRefresh(() => {
       const sig = sigOf()
       if (sig === treeSig) return
       treeSig = sig
-      trees.forEach(tr => { try { renderTree(tr) } catch (e) { console.warn('[trainer] árbol ' + tr.evId, e) } })
+      trees.forEach(tr => { try { renderTree(tr) } catch (e) { console.warn('[stemma] tree ' + tr.evId, e) } })
     })
 
-    // Consejo junto a la ventana del evento.
+    // Advice next to the event's window.
     const advisor = el('div', 'position:fixed;z-index:2147483646;width:340px;max-height:80vh;overflow:auto;box-sizing:border-box;' +
       'background:rgba(20,16,12,.96);color:#f3e6c8;font:13px/1.4 system-ui,sans-serif;border:1px solid #b08d57;' +
       'border-radius:8px;padding:8px 10px;box-shadow:0 4px 16px rgba(0,0,0,.5);display:none', document.body)
     advisor.id = ADVISOR_ID
     let advSig = '', marked = []
 
-    // "Forzar": un botón por resultado posible; elige la opción en el juego con la
-    // tirada que da ese resultado.
+    // "Force": one button per possible outcome; it picks the option in the game with the
+    // roll that gives that outcome.
     function forceButtons(parent, index, results) {
       const line = el('div', 'display:flex;flex-wrap:wrap;align-items:center;gap:4px;margin-top:3px', parent)
       const label = el('span', 'font-size:11px;opacity:.75', line)
@@ -173,12 +173,12 @@ module.exports = {
         ui.note(advisor, t('warAdvisorFoot'))
       }
 
-      // Marca el botón recomendado en la ventana del juego.
+      // Marks the recommended button in the game's window.
       unmark()
       const btn = a.rec >= 0 && document.getElementById('interactionModalOption_' + a.rec)
       if (btn) { btn.style.outline = '2px solid ' + GOLD; btn.style.outlineOffset = '2px'; marked.push(btn) }
 
-      // Al lado de la ventana: a la derecha, si no cabe a la izquierda, si no debajo.
+      // Next to the window: on the right, if it does not fit on the left, otherwise below.
       advisor.style.display = ''
       const r = content.getBoundingClientRect(), w = advisor.offsetWidth, gap = 12
       if (innerWidth - r.right >= w + gap) { advisor.style.left = (r.right + gap) + 'px'; advisor.style.top = r.top + 'px' }

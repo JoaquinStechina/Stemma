@@ -1,7 +1,7 @@
-// Multiplicadores. El juego multiplica todos los modificadores activos de una
-// clave (salud de la casa, ingresos, un trabajo, una propiedad…). El trainer
-// añade UNO propio por clave (id "cor_trainer", permanente) que se puede cambiar
-// o quitar sin tocar los del juego.
+// Multipliers. The game multiplies all the active modifiers of a
+// key (household health, income, a job, a property…). Stemma
+// adds ONE of its own per key (id "cor_trainer", permanent) that can be changed
+// or removed without touching the game's.
 const { el, fmt } = require('core/dom')
 const { t } = require('core/i18n')
 const game = require('game')
@@ -10,7 +10,7 @@ const sel = require('core/selection')
 const TRAINER_MOD_ID = 'cor_trainer'
 const PERSONAL = { health: 'health', fertility: 'fertility', expenses: 'expenses', stewardship: 'stewardshipShort' }
 
-// Clave elegida; fuera de build() para conservarla al cambiar de idioma.
+// Chosen key; outside build() so it is kept when the language changes.
 let modKey = 'household_health'
 
 module.exports = {
@@ -18,8 +18,8 @@ module.exports = {
   build({ body, ui }) {
     const { S, JOBS, MODS } = game
 
-    // [[nombre del grupo, [[clave, nombre], …]], …]; incluye las claves personales
-    // del personaje y la mascota elegidos en sus secciones.
+    // [[group name, [[key, name], …]], …]; includes the personal keys
+    // of the chosen character and pet in their sections.
     const modCatalog = () => {
       const out = [
         [t('household'), [['household_health', t('householdHealth')], ['revenue', t('revenue')], ['household_fertility', t('householdFertility')],
@@ -72,7 +72,7 @@ module.exports = {
     }, body)
     ui.note(body, t('modNote'))
 
-    // Lista de multiplicadores distintos de ×1 (clic = editarlo arriba).
+    // List of multipliers other than ×1 (click = edit it above).
     const activeBox = ui.group(body, t('activeNow'), 'multipliers.active')
     const active = el('div', 'font-size:12px;margin-top:2px', activeBox)
     const clearAll = el('div', 'display:flex;justify-content:flex-end;margin-top:4px', activeBox)
@@ -96,7 +96,7 @@ module.exports = {
         row.onclick = () => { modKey = k; modSig = ''; ui.refresh(true) }
         const name = el('span', '', row)
         name.textContent = modName(k) + (tf ? ' ★' : '')
-        // verde = te favorece (en gastos, un factor menor que 1)
+        // green = in your favor (for expenses, a factor below 1)
         const val = el('span', 'font-variant-numeric:tabular-nums;color:' + ((k.includes('expenses') ? v < 1 : v > 1) ? '#9fd38a' : '#e38a7a'), row)
         val.textContent = '×' + fmt(v)
       }

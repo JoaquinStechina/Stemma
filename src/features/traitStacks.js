@@ -1,7 +1,7 @@
-// Rasgos acumulables: cuántas copias tiene un personaje de cada rasgo que el
-// juego permite acumular (Strong, Mangled, Veteran, personalidades…). Cada copia
-// extra suma un 10% del bonus de habilidad del rasgo (ver game.TR.setStacks).
-// Comparte el personaje elegido con Familia.
+// Stackable traits: how many copies a character has of each trait the
+// game lets you stack (Strong, Mangled, Veteran, personalities…). Each extra
+// copy adds 10% of the trait's skill bonus (see game.TR.setStacks).
+// It shares the chosen character with Family.
 const { CTRL_CSS, el, fmt } = require('core/dom')
 const { t } = require('core/i18n')
 const game = require('game')
@@ -23,7 +23,7 @@ module.exports = {
     ui.rosterSelect(pick, game.household, () => sel.charId, v => { sel.charId = v },
       ch => ch.praenomen + (ch.id === S().current.id ? ' ' + t('you') : ''), t('noFamily'))
 
-    // Bonus de habilidad que el juego ha sumado con n copias (lo que suma addTrait).
+    // Skill bonus the game has added with n copies (what addTrait adds).
     const bonusText = (id, n) => {
       const skills = TR.list[id]?.modifiers?.skills || {}
       const f = n > 1 ? 1 + (n - 1) * TR.stackMultiplier : 1
@@ -36,8 +36,8 @@ module.exports = {
     ui.button(addLine, t('add'), () => { const ch = selected(); if (ch && addPick.value) { TR.setStacks(ch, addPick.value, 1); ach.grant([addPick.value]) } }, t('addTip'))
     ui.note(body, t('stackNote'))
 
-    // Las filas se rehacen cuando cambia el personaje o sus rasgos acumulables;
-    // los números se actualizan en cada refresco.
+    // Rows are rebuilt when the character or their stackable traits change;
+    // the numbers are updated on every refresh.
     let sig = '', rows = []
     ui.onRefresh(() => {
       const ch = selected()

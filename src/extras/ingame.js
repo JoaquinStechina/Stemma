@@ -1,14 +1,14 @@
-// Botones de los mods dentro de la interfaz del juego, como los ponen los mods
-// originales: en cada personaje (Jugar como, Divorcio, Dar en adopción, Casamentera,
-// y Pedir un préstamo en el jugador) y en la pantalla principal (Tema, Nueva
-// dinastía, Escenarios). Abren ventanas del juego. El cobro anual del banco también
-// es una ventana del juego, y el gobierno de provincias (extras/province), que no
-// tiene botón: sus ventanas salen cuando alguien de la casa empieza o termina un mandato.
+// Buttons of the mods inside the game's interface, as the original mods place them:
+// on each character (Play as, Divorce, Give for adoption, Matchmaker,
+// and Borrow on the player) and on the main screen (Theme, New
+// dynasty, Scenarios). They open game windows. The bank's yearly payment is also
+// a game window, and so are the provincial governorships (extras/province), which have no
+// button: their windows appear when someone in the household starts or ends a term.
 //
-// Los botones se guardan en la partida (characters[id].actions, current.actions)
-// como cualquier acción del juego. Sus métodos pasan por una comprobación del juego
-// que el trainer redirige a sus eventos (hook.js): sin el trainer, los botones no
-// hacen nada y no dan errores. Ni las acciones ni las ventanas activan el modo mods
+// The buttons are saved with the game (characters[id].actions, current.actions)
+// like any game action. Their methods go through a game check
+// that Stemma redirects to its events (hook.js): without Stemma, the buttons do
+// nothing and give no errors. Neither the actions nor the windows turn on mod mode
 // (isDAAPI: false).
 const i18n = require('core/i18n')
 const ls = require('core/storage')
@@ -23,14 +23,14 @@ const PROV = require('extras/province')
 
 const { t } = i18n
 const KEY = 'corTrainerInGame'
-// Firma de los botones: si cambia (otro idioma, o una versión nueva de este archivo)
-// se rehacen; si no, se dejan como están para no redibujar a nadie.
-const VERSION = 2 // 2: eventos por la puerta de game.HOOK (antes 'trainer/...')
+// Button signature: if it changes (another language, or a new version of this file)
+// they are rebuilt; if not, they are left as they are so nobody is redrawn.
+const VERSION = 2 // 2: events through the game.HOOK gate (before: 'trainer/...')
 const sig = () => VERSION + ':' + i18n.lang()
-// Bloques que se pueden mostrar en el juego, en el orden del panel.
+// Blocks that can be shown in the game, in the panel's order.
 const FEATURES = ['theme', 'playAs', 'divorce', 'adopt', 'dynasty', 'scenario', 'bank', 'matchmaker', 'province']
 const CHARACTER = ['playAs', 'divorce', 'adopt']
-const ACTION = f => 'trainer_' + f // clave de la acción en el juego
+const ACTION = f => 'trainer_' + f // key of the action in the game
 
 const enabled = f => ls.get(KEY, {})[f] ?? true
 const setEnabled = (f, v) => { const o = ls.get(KEY, {}); o[f] = !!v; ls.set(KEY, o) }
@@ -38,11 +38,11 @@ const setEnabled = (f, v) => { const o = ls.get(KEY, {}); o[f] = !!v; ls.set(KEY
 const api = () => game.DA.api()
 const S = () => game.S()
 const call = (name, method, context) => game.HOOK.call(name, method, context)
-// Abre una ventana del juego (si ya hay otra abierta, la del trainer la reemplaza, como en el mod Play As).
+// Opens a game window (if another is already open, Stemma's replaces it, as in the Play As mod).
 const show = modal => api().displayInteractionModal({ isManualOnly: true, ...modal })
 const cancel = () => ({ text: t('xCancel') })
 
-// Puede mostrarse el botón (también lo comprueba el juego al dibujarlo, con preCheck).
+// Whether the button can be shown (the game also checks it when drawing it, with preCheck).
 const VISIBLE = {
   playAs: id => enabled('playAs') && A.canPlayAs(S().characters[id]),
   divorce: id => enabled('divorce') && A.canDivorce(S().characters[id]),
@@ -51,8 +51,8 @@ const VISIBLE = {
 const fmt = n => Math.round(n).toLocaleString()
 const traitName = id => game.TR?.titles[id]?.title || id
 
-// Formulario del pedido a la casamentera, como desplegables de la ventana del juego.
-// Cada entrada: [campo, título, opciones [{ label, value }]].
+// Form for the matchmaker order, as dropdowns of the game's window.
+// Each entry: [field, title, options [{ label, value }]].
 const orderFields = () => {
   const any = t('xMmAny')
   const fields = [
@@ -76,7 +76,7 @@ const specSet = (spec, field, v) => {
   else if (k === 'trait') spec.traits[sub] = v
   else spec[k] = v
 }
-// Texto del precio: total y desglose.
+// Price text: total and breakdown.
 const quoteText = q => q.items.map(({ key, cost }) => {
   const [k, sub] = key.split(':')
   const name = k === 'fee' ? t('xMmFeeItem') : k === 'count' ? t('xMmCount') : k === 'heritage' ? t('xHeritage') :
@@ -84,8 +84,8 @@ const quoteText = q => q.items.map(({ key, cost }) => {
   return name + ' ' + fmt(cost)
 }).join(' · ')
 
-// --- Eventos ------------------------------------------------------------------------
-// El juego llama a methods[m](contextoDelStore, { ...context, ...params }).
+// --- Events ------------------------------------------------------------------------
+// The game calls methods[m](storeContext, { ...context, ...params }).
 const EVENTS = {
   playAs: {
     visible: (_, { characterId }) => VISIBLE.playAs(characterId),
@@ -142,14 +142,14 @@ const EVENTS = {
         }],
         options: [{ text: '☾ ' + t('xDarkModeToggle'), action: call('theme', 'dark') }, { text: t('xOk') }],
       })
-      setTimeout(orderStyle, 50) // barra en la lista de temas
+      setTimeout(orderStyle, 50) // scroll bar for the theme list
     },
     pick: (_, { option }) => THEMES.apply(option?.value || ''),
     dark: ({ dispatch }) => dispatch('toggleSetting', { setting: 'darkMode' }),
   },
   dynasty: {
     visible: () => enabled('dynasty'),
-    // Lo que se va escribiendo en la ventana (el juego llama a onChange en cada cambio).
+    // What is being typed in the window (the game calls onChange on every change).
     draft: null,
     process() {
       const d = game.dynasty()
@@ -191,13 +191,13 @@ const EVENTS = {
       })
     },
     play: (_, { id }) => { A.playScenario(id) },
-    // Boda con Attica (escenario de Agrippa): los premios y castigos van en statChanges.
+    // Wedding with Attica (Agrippa scenario): rewards and punishments go in statChanges.
     attica: (_, { yes }) => { if (yes) A.atticaWedding() },
   },
-  // Argentarius: el banco y las inversiones (extras/finance). Cada ventana lleva a la
-  // siguiente por la cola del juego (se abre al cerrarse la anterior). El dinero lo
-  // mueven los statChanges de cada opción; si la acción no se puede hacer (algo cambió
-  // entre medio), se devuelve.
+  // Argentarius: the bank and the investments (extras/finance). Each window leads to the
+  // next through the game's queue (it opens when the previous one closes). The money is
+  // moved by each option's statChanges; if the action can't be done (something changed
+  // in between), it is refunded.
   bank: {
     visible: () => enabled('bank'),
     process() { show(finHub()) },
@@ -223,8 +223,8 @@ const EVENTS = {
     withdraw: (_, { amount }) => { refund(FIN.withdraw(amount) - amount) },
     grainMenu() { next(finGrain()) },
     grainBuy: (_, { modii, paid }) => { if (!FIN.buyGrain(modii, paid)) refund(paid) },
-    // fair: venta al pueblo a precio justo en una hambruna (gana influencia); si no, en
-    // una hambruna vender caro cuesta prestigio.
+    // fair: sale to the people at a fair price in a famine (gains influence); otherwise, in
+    // a famine selling dear costs prestige.
     grainSell: (_, { modii, value, fair }) => {
       const n = FIN.sellGrain(modii)
       if (n < modii) refund(-Math.round(value * (modii - n) / modii))
@@ -233,7 +233,7 @@ const EVENTS = {
       else { const p = FIN.hoardPenalty(n), dyn = game.dynasty(); if (dyn) dyn.prestige -= p; finReport([{ key: 'finGrainHoarded', vars: { prestige: p } }]) }
     },
   },
-  // Gobierno de provincias: ventanas al empezar y al terminar un mandato (desde sync).
+  // Provincial governorships: windows at the start and end of a term (from sync).
   province: {
     choose: (_, { key, level }) => { PROV.choose(key, level) },
     trial: (_, { key, defense }) => {
@@ -242,9 +242,9 @@ const EVENTS = {
       if (r) next(provVerdict(r))
     },
   },
-  // Casamentera: se abre desde su botón en la ventana "Arrange Betrothal".
+  // Matchmaker: opened from its button in the "Arrange Betrothal" window.
   matchmaker: {
-    // Pedido en curso (lo que se va eligiendo en los desplegables).
+    // Order in progress (what is being chosen in the dropdowns).
     draft: null,
     process(_, { characterId, isMatrilineal }) {
       const ch = S().characters[characterId]
@@ -260,16 +260,16 @@ const EVENTS = {
         })),
         options: [payOption(), cancel()],
       })
-      setTimeout(orderStyle, 50) // la ventana se abre en el siguiente ciclo
+      setTimeout(orderStyle, 50) // the window opens on the next cycle
     },
-    // Cambio en un desplegable: se guarda y se actualiza el precio del botón de pagar.
+    // Change in a dropdown: it is saved and the pay button's price is updated.
     set(_, { field, option }) {
       const d = EVENTS.matchmaker.draft, m = S().interactionModal
       if (!d || !option) return
       specSet(d.spec, field, option.value)
       if (m?.options?.[0]?.action?.method === 'order') {
         const pay = payOption()
-        // El juego avisa "You may not be able to afford this" solo al abrir; aquí al cambiar.
+        // The game warns "You may not be able to afford this" only on opening; here, on change.
         Object.assign(m.options[0], pay, { cantAfford: !!pay.statChanges.cash && -pay.statChanges.cash * api().calculateScaleByClassFactor() > S().current.cash })
       }
     },
@@ -280,7 +280,7 @@ const EVENTS = {
   },
 }
 
-// Botón de pagar el pedido, con el total y su desglose (o gratis).
+// Button to pay the order, with the total and its breakdown (or free).
 function payOption() {
   const d = EVENTS.matchmaker.draft, q = MM.quote(d.spec), n = MM.COUNTS[d.spec.count]
   const cost = A.costsOn() ? q.total : 0
@@ -291,12 +291,12 @@ function payOption() {
   }
 }
 
-// Dinero en statChanges: el juego lo multiplica por el factor de clase, así que se
-// divide antes para que se cobre (o dé) exactamente `real`.
+// Money in statChanges: the game multiplies it by the class factor, so it is
+// divided beforehand so that exactly `real` is charged (or given).
 function money(real) { return { cash: real / api().calculateScaleByClassFactor() } }
 
-// --- Ventanas del argentarius ---------------------------------------------------------
-// La siguiente ventana, desde la acción de otra: va a la cola y se abre al cerrarse esa.
+// --- Argentarius windows ---------------------------------------------------------
+// The next window, from another's action: it goes to the queue and opens when that one closes.
 function next(modal) {
   api().pushInteractionModalQueue({ isManualOnly: true, image: ICONS.bank, ...modal })
   api().processInteractionModalQueue()
@@ -306,16 +306,16 @@ const pct = x => (Math.round(x * 1000) / 10).toLocaleString() + '%'
 const className = () => game.CLASSES?.[FIN.cls()] || String(FIN.cls())
 const back = (method = 'hub') => ({ text: t('finBack'), action: call('bank', method) })
 const close = () => ({ text: t('finClose') })
-// Opción del menú principal: deshabilitada (con el motivo) si no está disponible.
+// Main menu option: disabled (with the reason) if not available.
 const menuOption = (kind, text, method) => {
   const why = FIN.why(kind)
   return why ? { text, disabled: true, showDisabledWithTooltip: true, tooltip: t(why, { cls: game.CLASSES?.[FIN.MIN_CLASS[kind]] || '' }) }
     : { text, action: call('bank', method) }
 }
-// Nota del testaferro para los senadores.
+// Front man note for senators.
 const proxyNote = () => { const p = FIN.proxy(); return p ? ' ' + t('finProxyNote', { commission: pct(p.commission), scandal: pct(p.scandal) }) : '' }
 
-// Atributos por debajo de 20, con su penalización ('' si no hay).
+// Attributes below 20, with their penalty ('' if none).
 function lowSkills() {
   const low = ['stewardship', 'eloquence', 'intelligence', 'combat'].filter(k => FIN.penalty(k) < 1)
   return low.length ? ' ' + t('finHubPenalty', { list: low.map(k => t(k) + ' ' + Math.round(FIN.skillValue(k)) + ' (×' + FIN.penalty(k).toFixed(2) + ')').join(', ') }) : ''
@@ -451,8 +451,8 @@ function finSeaAmount(id) {
   return { title: t('finVoyage', { route: o.route, rate: o.rate, months: o.months }), message: t('finSeaAmountMsg', { room: fmt(room) }), options: [...opts, back('seaMenu')] }
 }
 
-// Depósito en el templo de Cástor: lo que pasa del tope de efectivo, una parte o
-// sacarlo. Avisa si depositar te bajaría de clase (lo depositado no cuenta).
+// Deposit at the temple of Castor: what is over the cash cap, a part, or
+// taking it out. Warns if depositing would drop you a class (deposits do not count).
 function finDeposit() {
   const cash = Math.floor(S().current.cash), dep = FIN.deposited(), excess = FIN.excessCash(), cap = FIN.cashCap()
   const drop = n => FIN.classAfter(n) < FIN.cls() ? t('finDepositDrop', { cls: game.CLASSES?.[FIN.classAfter(n)] || '' }) : ''
@@ -472,7 +472,7 @@ function finDeposit() {
   }
 }
 
-// Grano en los horrea: precio del mes, cosecha, estimación de la próxima y avisos.
+// Grain in the horrea: price of the month, harvest, estimate of the next and warnings.
 const price2 = n => n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 function finGrain() {
   const g = FIN.grain(), buy = FIN.grainBuyPrice(), sell = FIN.grainSellPrice(), room = FIN.grainRoom(), h = FIN.harvest().factor
@@ -512,7 +512,7 @@ function finPortfolio() {
   return { title: t('finPortfolio'), message: parts.length ? parts.join(' · ') : t('finPfEmpty'), options: [back(), close()] }
 }
 
-// Informe de resultados (barcos que vuelven, cobros del año): una ventana del juego.
+// Results report (ships returning, the year's payments): a game window.
 function finReport(lines) {
   const text = lines.map(({ key, vars }) => t(key, Object.fromEntries(Object.entries(vars).map(([k, v]) =>
     [k, k === 'contract' ? t('fin_c_' + v) : typeof v === 'number' ? fmt(v) : v])))).join(' · ')
@@ -520,11 +520,11 @@ function finReport(lines) {
   api().processInteractionModalQueue()
 }
 
-// --- Gobierno de provincias ------------------------------------------------------------
+// --- Provincial governorships ------------------------------------------------------------
 const postTitle = post => game.JOBS?.titles?.[post] || post
 const govName = rec => { const ch = S().characters[rec.id]; return ch ? A.link(ch) : '?' }
-// Juicios ya preguntados en esta sesión (si la ventana se pierde, se vuelve a preguntar
-// al recargar el trainer).
+// Trials already asked about in this session (if the window is lost, it is asked again
+// when Stemma reloads).
 const asked = new Set()
 
 function provChoose(rec) {
@@ -561,9 +561,9 @@ function provVerdict(r) {
   return { title: t('provTrialTitle'), image: ICONS.province, message: parts.join(' '), options: [{ text: t('xOk') }] }
 }
 
-// Desplegables largos de las ventanas del trainer (rasgos del pedido, temas): con un
-// alto máximo y barra vertical para recorrerlos. Solo mientras está abierta una
-// ventana del trainer con desplegables (clase en <body>), para no cambiar las del juego.
+// Long dropdowns in Stemma's windows (order traits, themes): with a
+// maximum height and a vertical bar to scroll them. Only while a Stemma
+// window with dropdowns is open (class on <body>), so the game's own are not changed.
 const MM_CLASS = 'cor-trainer-mm-open', MM_STYLE = 'cor-trainer-mm-style'
 const isOrderOpen = () => {
   const m = S()?.interactionModal
@@ -584,9 +584,9 @@ body.${MM_CLASS} #interactionModal .dropdown-menu::-webkit-scrollbar-thumb:hover
   document.body.classList.toggle(MM_CLASS, isOrderOpen())
 }
 
-// Botón de la casamentera en "Arrange Betrothal", junto a "Pay to look for other
-// matches". La vista es del juego, así que el botón se vuelve a poner si el juego
-// la redibuja.
+// Matchmaker button in "Arrange Betrothal", next to "Pay to look for other
+// "matches". The view belongs to the game, so the button is put back if the game
+// redraws it.
 const BTN_ID = 'cor-trainer-matchmaker'
 function betrothalButton() {
   const view = game.betrothalView(), old = document.getElementById(BTN_ID)
@@ -609,16 +609,16 @@ function betrothalButton() {
   view.actions.appendChild(b)
 }
 
-// Los métodos del juego van en "methods"; visible() se usa como preCheck.
+// The game's methods go in "methods"; visible() is used as the preCheck.
 for (const [name, e] of Object.entries(EVENTS)) {
   const methods = {}
   for (const [k, fn] of Object.entries(e)) if (typeof fn === 'function') methods[k] = fn
   game.HOOK?.register(name, { methods })
 }
 
-// --- Sincronizar los botones ---------------------------------------------------------
-// Pone o quita los botones según lo activado y quién puede usarlos. Solo toca a los
-// personajes que cambian (cada cambio redibuja a ese personaje en el juego).
+// --- Syncing the buttons ---------------------------------------------------------
+// Adds or removes the buttons according to what is turned on and who can use them. It only
+// touches the characters that change (each change redraws that character in the game).
 const characterAction = f => ({
   title: t({ playAs: 'xPlayAs', divorce: 'xDivorce', adopt: 'xAdopt' }[f]),
   icon: ICONS[f], isAvailable: true, hideWhenBusy: f === 'adopt',
@@ -648,15 +648,15 @@ function sync() {
           preCheck: call(f, 'visible', { characterId: ch.id }), process: call(f, 'process', { characterId: ch.id }) } })
       } else if (!want && cur) a.deleteCharacterAction({ characterId: ch.id, key })
     }
-    // Botones del trainer que ya no existen (p. ej. la casamentera, que ahora está en
-    // la ventana "Arrange Betrothal").
+    // Stemma buttons that no longer exist (e.g. the matchmaker, which is now in
+    // the "Arrange Betrothal" window).
     for (const key of Object.keys(ch.actions || {})) {
       if (key.startsWith('trainer_') && !CHARACTER.includes(key.slice(8))) a.deleteCharacterAction({ characterId: ch.id, key })
     }
   }
   betrothalButton()
   orderStyle()
-  // Boda con Attica: una ventana del juego, como en el mod (una sola vez).
+  // Wedding with Attica: a game window, as in the mod (only once).
   if (enabled('scenario') && A.atticaDue()) {
     const p = game.player()
     A.atticaDone()
@@ -669,9 +669,9 @@ function sync() {
     })
     a.processInteractionModalQueue()
   }
-  // Finanzas: barcos que vuelven y resultados del año (informe), y el cobro anual del
-  // banco. Salen aunque el botón del argentarius esté desactivado: lo invertido sigue
-  // corriendo y hay que pagar al menos el interés.
+  // Finance: returning ships and the year's results (report), and the bank's
+  // yearly payment. They appear even if the argentarius button is turned off: what is invested
+  // keeps running and at least the interest has to be paid.
   const lines = FIN.tick()
   if (lines.length) finReport(lines)
   if (enabled('province')) {
@@ -697,7 +697,7 @@ function sync() {
   }
 }
 
-// Abre el argentarius en el juego (desde el panel).
+// Opens the argentarius in the game (from the panel).
 const openFinance = () => EVENTS.bank.process()
 
 module.exports = { FEATURES, enabled, setEnabled, sync, openFinance }

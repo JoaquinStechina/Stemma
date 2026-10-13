@@ -1,30 +1,30 @@
-// Eventos del trainer dentro del juego. Los botones (acciones) y las ventanas del
-// juego llaman a sus métodos por nombre de evento: invokeMethod [bc91] los busca en
-// el contexto de eventos [baa2] y llama a methods[método](ctx, contexto).
+// Stemma's events inside the game. The game's buttons (actions) and windows
+// call their methods by event name: invokeMethod [bc91] looks them up in
+// the events context [baa2] and calls methods[method](ctx, context).
 //
-// Los botones se guardan en la partida, así que tienen que funcionar también sin el
-// trainer. Si un evento no existe, bc91 lo anota con console.warn, y el juego guarda
-// cada aviso en current.sessionErrorLog [9b31]: como el preCheck se evalúa al dibujar
-// el botón [c29c], el aviso vuelve a dibujarlo y el juego se cuelga en un bucle.
-// Por eso todo pasa por una "puerta": lifeAndDeath/birth.preCheckIfAlive, una
-// comprobación del juego sin efectos (characters[characterId] vivo). Sin characterId
-// en el contexto devuelve undefined, sin avisos: sin el trainer, los botones y las
-// opciones de sus ventanas no hacen nada. (El botón tampoco se oculta: el juego usa
-// el resultado de dispatch, que es una Promise y siempre cuenta como verdadero.)
-// Con el trainer, la puerta lleva { trainer: { event, method, context } } a
-// window.__corEvents (se actualiza en cada inyección).
-// Los errores de los eventos del trainer no van a console.warn (el mismo bucle).
+// The buttons are saved with the game, so they have to work without
+// Stemma too. If an event does not exist, bc91 logs it with console.warn, and the game stores
+// every warning in current.sessionErrorLog [9b31]: since the preCheck is evaluated when
+// the button is drawn [c29c], the warning redraws it and the game hangs in a loop.
+// That is why everything goes through a "gate": lifeAndDeath/birth.preCheckIfAlive, a
+// side-effect-free game check (characters[characterId] alive). Without characterId
+// in the context it returns undefined, with no warnings: without Stemma, the buttons and the
+// options of their windows do nothing. (The button isn't hidden either: the game uses
+// the result of dispatch, which is a Promise and always counts as true.)
+// With Stemma, the gate carries { trainer: { event, method, context } } to
+// window.__corEvents (updated on every injection).
+// Errors in Stemma's events do not go to console.warn (the same loop).
 //
-// Las partidas guardadas antes usaban eventos 'trainer/<nombre>' y sin el trainer
-// cuelgan el juego al cargarlas. Este archivo no usa require: stemma.mjs también lo
-// ejecuta al empezar cada carga de la página (antes que el juego), así esos eventos
-// ya existen cuando el juego carga la partida, y sync() los cambia por la puerta.
+// Games saved earlier used 'trainer/<name>' events and, without Stemma, they
+// hang the game on load. This file does not use require: stemma.mjs also runs it
+// at the start of every page load (before the game), so those events
+// already exist when the game loads the save, and sync() swaps them for the gate.
 const GATE = { event: 'lifeAndDeath/birth', method: 'preCheckIfAlive' }
 const PREFIX = './trainer/'
 
 function run(name, method, ctx, context) {
   const fn = window.__corEvents[name]?.methods[method]
-  if (!fn) return false // trainer todavía sin inyectar, o evento de otra versión
+  if (!fn) return false // Stemma not injected yet, or an event from another version
   try { return fn(ctx, context) } catch (e) {
     window.__corErrors.push({ event: name, method, error: String(e && e.stack || e) })
     if (window.__corErrors.length > 50) window.__corErrors.shift()
@@ -38,14 +38,14 @@ function patchGate(methods) {
   const gate = function (ctx, c) {
     const tr = c && c.trainer
     if (!tr) return orig.apply(this, arguments)
-    const { trainer, ...params } = c // p. ej. { option } de un desplegable
+    const { trainer, ...params } = c // e.g. { option } from a dropdown
     return run(tr.event, tr.method, ctx, { ...tr.context, ...params })
   }
   gate.__cor = true
   methods[GATE.method] = gate
 }
 
-// req: la función require de webpack del juego.
+// req: the game's webpack require function.
 function install(req) {
   window.__corEvents = window.__corEvents || {}
   window.__corErrors = window.__corErrors || []
@@ -54,8 +54,8 @@ function install(req) {
   if (!mod.exports.__cor) {
     const orig = mod.exports
     const legacy = name => ({ default: { methods: new Proxy({}, { get: (_, m) => (ctx, c) => run(name, m, ctx, c) }) } })
-    // La puerta se pone al pedir su evento (no antes: al empezar la página, el juego
-    // todavía no cargó sus módulos).
+    // The gate is installed when its event is requested (not before: at the start of the page, the game
+    // hasn't loaded its modules yet).
     const wrap = key => {
       if (typeof key === 'string' && key.startsWith(PREFIX)) return legacy(key.slice(PREFIX.length))
       const m = orig(key)
@@ -69,8 +69,8 @@ function install(req) {
 
 module.exports = {
   install,
-  // Referencia a un método del trainer para acciones y ventanas del juego.
+  // Reference to a Stemma method for the game's actions and windows.
   call: (event, method, context) => ({ ...GATE, context: { trainer: { event, method, context } } }),
-  // ¿Es un método del trainer? (también los de partidas anteriores)
+  // Is it a Stemma method? (including those from earlier saves)
   ours: ref => !!ref?.context?.trainer || (typeof ref?.event === 'string' && ref.event.startsWith('trainer/')),
 }

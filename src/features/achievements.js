@@ -1,15 +1,15 @@
-// Logros: marcar o desmarcar logros conseguidos, agrupados como en el juego, con
-// buscador y filtro. Cada logro tiene dos casillas: conseguido (global, como la
-// pantalla de logros del juego) y conseguido en esta partida. Si "también en
-// Steam" está activado, marcar un logro lo desbloquea en Steam (core/achievements);
-// quitarlo solo lo quita en el juego. Ocupa todo el ancho del panel y reparte sus
-// grupos en columnas.
+// Achievements: mark or unmark obtained achievements, grouped as in the game, with a
+// search box and filter. Each achievement has two checkboxes: obtained (global, like the
+// game's achievements screen) and obtained in this playthrough. If "also on
+// Steam" is on, marking an achievement unlocks it on Steam (core/achievements);
+// removing it only removes it in the game. It takes the full width of the panel and spreads its
+// groups over columns.
 const { CTRL_CSS, el } = require('core/dom')
 const { t } = require('core/i18n')
 const game = require('game')
 const ach = require('core/achievements')
 
-// Filtro actual; fuera de build() para conservarlo al cambiar de idioma.
+// Current filter; outside build() so it is kept when the language changes.
 let filterText = '', filterMode = 'all'
 
 module.exports = {
@@ -25,7 +25,7 @@ module.exports = {
     const got = () => S()?.achievements || []
     const thisRun = () => S()?.current?.flagAchievementsThisRun || []
 
-    // Steam: interruptor, enviar los ya conseguidos y aviso si el juego no lo permite.
+    // Steam: switch, send the ones already obtained and a warning if the game does not allow it.
     const steamRow = el('div', 'display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:2px 0 4px', body)
     const steamLabel = el('label', 'display:flex;align-items:center;gap:6px;cursor:pointer', steamRow)
     steamLabel.title = t('achSteamTip')
@@ -44,7 +44,7 @@ module.exports = {
     const steamStatus = el('div', 'font-size:11px;color:#e0c07a;width:100%', steamRow)
     ui.onRefresh(() => { const why = game.steamBlocked(); if (why) steamStatus.textContent = t('steam_' + why) })
 
-    // Buscador, filtro, contador y botones en una fila (se parte si el panel es estrecho).
+    // Search box, filter, counter and buttons in one row (it wraps if the panel is narrow).
     const bar = el('div', 'display:flex;flex-wrap:wrap;align-items:center;gap:4px;margin:2px 0 4px', body)
     const search = el('input', CTRL_CSS + ';flex:1 1 180px;max-width:360px;min-width:0;padding:1px 4px', bar)
     search.type = 'search'
@@ -61,8 +61,8 @@ module.exports = {
     mode.onchange = () => { filterMode = mode.value; applyFilter() }
 
     const counter = el('span', 'font-size:11px;opacity:.75;margin:0 4px;flex:1;white-space:nowrap', bar)
-    // Un logro puede estar en varios grupos del juego (p. ej. "A Wedding" en Basics y
-    // Family): se muestra en todos, pero se cuenta y se marca una sola vez.
+    // An achievement can be in several of the game's groups (e.g. "A Wedding" in Basics and
+    // Family): it is shown in all of them, but counted and marked only once.
     const rows = []
     const shownIds = () => [...new Set(rows.filter(r => r.row.style.display !== 'none').map(r => r.id))]
     const bulk = el('div', 'display:flex;gap:4px;margin-left:auto', bar)
@@ -76,13 +76,13 @@ module.exports = {
       if (ids.length && confirm(t('achConfirmUnmark', { n: ids.length }))) game.setAchievements(ids, false)
     }, t('achShownTip'))
 
-    // Un bloque plegable por grupo del juego, repartidos en columnas como en Propiedades.
+    // One collapsible block per game group, spread over columns as in Properties.
     const grid = el('div', 'display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));column-gap:22px;align-items:start', body)
     const groups = []
     for (const [g, ids] of Object.entries(ACH.groups || {})) {
       const col = el('div', 'min-width:0', grid)
       const box = ui.group(col, groupTitle(g), 'achievements.' + g)
-      // Cabecera de las dos casillas, en cada columna para que quede alineada.
+      // Header of the two checkboxes, in each column so it stays aligned.
       const cols = el('div', 'display:flex;gap:6px;font-size:11px;opacity:.7;margin-top:2px', box)
       el('span', 'flex:1', cols).textContent = '✓ ' + t('achColGot')
       el('span', '', cols).textContent = t('achColRun')
@@ -109,7 +109,7 @@ module.exports = {
     }
     ui.note(body, t('achNote'))
 
-    // Oculta los logros que no coinciden y los grupos que quedan vacíos.
+    // Hides the achievements that do not match and the groups left empty.
     function applyFilter() {
       const q = filterText.trim().toLowerCase(), have = new Set(got())
       for (const r of rows) {
@@ -125,7 +125,7 @@ module.exports = {
       const have = new Set(got()), run = new Set(thisRun())
       for (const r of rows) { r.cb.checked = have.has(r.id); r.run.checked = run.has(r.id) }
       counter.textContent = t('achCount', { got: allIds.filter(id => have.has(id)).length, total: allIds.length })
-      if (filterMode !== 'all') applyFilter() // al marcar/desmarcar, un logro puede salir del filtro
+      if (filterMode !== 'all') applyFilter() // when marking/unmarking, an achievement can leave the filter
     })
     applyFilter()
   },

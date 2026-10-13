@@ -1,11 +1,11 @@
-// Punto de entrada dentro del juego: construye el panel y registra los atajos
-// globales (solo una vez por página, aunque el panel se reinyecte).
+// Entry point inside the game: builds the panel and registers the global
+// shortcuts (only once per page, even if the panel is injected again).
 const game = require('game')
 const panel = require('core/panel')
 
 panel.build()
 
-// Si la ventana del juego se achica, que el panel no quede fuera de pantalla.
+// If the game window shrinks, the panel must not end up off screen.
 if (!window.__corTrainerResize) {
   window.__corTrainerResize = true
   addEventListener('resize', () => {
@@ -16,7 +16,7 @@ if (!window.__corTrainerResize) {
   })
 }
 
-// F8 muestra u oculta el panel.
+// F8 shows or hides the panel.
 if (!window.__corTrainerKeys) {
   window.__corTrainerKeys = true
   window.addEventListener('keydown', e => {
@@ -27,5 +27,5 @@ if (!window.__corTrainerKeys) {
   })
 }
 
-// El host reintenta la inyección hasta recibir 'ok' (partida cargada).
+// The host retries the injection until it receives 'ok' (save loaded).
 module.exports = game.store() ? 'ok' : 'store-not-ready'

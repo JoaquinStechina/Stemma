@@ -1,6 +1,6 @@
 # Development
 
-How Stemma is built and how to extend it. Code comments and the console messages of the host are in Spanish.
+How Stemma is built and how to extend it. Code, comments and console messages are in English; the panel's texts are in `locales/` (English is the reference and default language).
 
 ## How it works
 
@@ -104,13 +104,13 @@ The character or pet selection is in `core/selection` (`sel.character()`, `sel.p
 
 ## Adding a language
 
-1. Copy `locales/es.json` to `locales/<code>.json` and translate the values. Don't change the keys; `langName` is the name shown when you hover over the flag.
+1. Copy `locales/en.json` to `locales/<code>.json` and translate the values. Don't change the keys; `langName` is the name shown when you hover over the flag.
 2. Add the flag in `src/core/flags.js`, with the same code.
-3. `node stemma.mjs --check` warns if a language is missing keys or has extra ones (missing ones are shown in Spanish).
+3. `node stemma.mjs --check` warns if a language is missing keys or has extra ones (missing ones are shown in English).
 
 ## If a game update breaks something
 
-- **Internal identifiers.** The game's (`'50ab'`, `'a822'`, `'fc68'`…) are **only in `src/game.js`**, grouped by topic. If a group doesn't load, the panel shows "Not available in this game version." for whatever depends on it. The game's console (F12, or DevTools through the debugging port) shows `[trainer] <group> no disponible`.
+- **Internal identifiers.** The game's (`'50ab'`, `'a822'`, `'fc68'`…) are **only in `src/game.js`**, grouped by topic. If a group doesn't load, the panel shows "Not available in this game version." for whatever depends on it. The game's console (F12, or DevTools through the debugging port) shows `[stemma] <group> not available`.
 - **Mods API.** The Extras section uses `game.DA.api()`: the game's `daapi` API `[6174]` created with `isDAAPI: false`, as in the game's own events. You must never call `setupDAAPI` or set `settings.enableMods`, because they mark the save with `flagUsedMods` and disable its achievements forever.
 - **Buttons in the game.** The game's buttons and windows call their methods by event name, through `invokeMethod` `[bc91]` and the events context `[baa2]`. They are saved with the game, so they can't name events that only exist with Stemma: if an event is missing, `bc91` logs it with `console.warn`, the game stores the warning in `current.sessionErrorLog` `[9b31]` and, since the `preCheck` is evaluated when the button is drawn `[c29c]`, that redraws it and the game hangs. That is why `src/hook.js` uses `lifeAndDeath/birth.preCheckIfAlive` as a gate, a side-effect-free game check: without `characterId` it returns `undefined`, and with Stemma it carries `{ trainer: { event, method, context } }` to whatever was registered with `HOOK.register` (references are created with `HOOK.call`). Without Stemma, the buttons are visible but do nothing: the game does not hide them, because it uses the result of `dispatch`, which is always a Promise. Earlier saves used `trainer/<name>` events: `stemma.mjs` registers `hook.js` with `Page.addScriptToEvaluateOnNewDocument` (a fake webpack chunk that runs before the game), and `sync()` replaces those buttons. `hook.js` does not use `require`, because it also runs on its own. If you change the buttons, raise `VERSION` in `extras/ingame.js` so they are rebuilt.
 - **"Arrange Betrothal" window.** The matchmaker button is added to the DOM of that game view (`game.betrothalView()`) and put back if the game redraws it. Its candidates are created with the game's generator (`game.SPOUSES`) and placed at the start of `current.generatedPotentialSpouseCharacterIds`, which is where the view takes its list from.

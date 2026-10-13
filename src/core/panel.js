@@ -1,7 +1,7 @@
-// Ventana del trainer: marco movible y redimensionable, cabecera con banderas y
-// la rejilla de secciones (plegables y reordenables). El contenido de cada
-// sección lo aporta su módulo en features/. build() se vuelve a llamar al
-// cambiar de idioma o al restablecer la posición.
+// Stemma's window: movable and resizable frame, header with flags and
+// the grid of sections (collapsible and reorderable). The content of each
+// section comes from its module in features/. build() is called again when
+// the language changes or the position is reset.
 const ls = require('core/storage')
 const { el } = require('core/dom')
 const i18n = require('core/i18n')
@@ -15,24 +15,24 @@ const COL_MIN = 290, COL_GAP = 18
 const SECTION_IDS = FEATURES.map(f => f.id)
 
 function build() {
-  // Si estaba oculto con F8 (p. ej. al reinyectar en modo --dev), sigue oculto.
+  // If it was hidden with F8 (e.g. when injecting again in --dev mode), it stays hidden.
   const wasHidden = document.getElementById('cor-trainer')?.style.display === 'none'
   document.getElementById('cor-trainer')?.remove()
   window.__corTrainerRO?.disconnect()
   const ui = createUI()
 
-  // Posición y tamaño: el panel se puede arrastrar (desde el título) y
-  // redimensionar desde cualquier borde o esquina. Ambos se recuerdan.
-  // "frame" es la ventana (borde, sombra, asas de redimensionado);
-  // "box" es el contenido con scroll.
+  // Position and size: the panel can be dragged (by the title) and
+  // resized from any edge or corner. Both are remembered.
+  // "frame" is the window (border, shadow, resize handles);
+  // "box" is the scrolling content.
   const layout = ls.get('corTrainerLayout', {})
   const frame = el('div', 'position:fixed;z-index:2147483647;background:rgba(20,16,12,.94);box-sizing:border-box;' +
     'color:#f3e6c8;font:13px/1.4 system-ui,sans-serif;border:1px solid #b08d57;' +
     'border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.5);user-select:none')
   frame.id = 'cor-trainer'
   frame.lang = i18n.lang()
-  // Ojo: el alto del contenido se limita con height/max-height propios y no con
-  // flexbox, porque F8 alterna frame.style.display ('' <-> 'none') y perdería el flex.
+  // Note: the content height is limited with its own height/max-height and not with
+  // flexbox, because F8 toggles frame.style.display ('' <-> 'none') and would lose the flex.
   const box = el('div', 'padding:10px 12px;overflow:auto;box-sizing:border-box', frame)
   const sizeInner = () => {
     if (frame.style.height) { box.style.height = '100%'; box.style.maxHeight = 'none' }
@@ -50,17 +50,17 @@ function build() {
   let saveTimer
   const saveLayout = () => {
     clearTimeout(saveTimer)
-    saveTimer = setTimeout(() => frame.offsetWidth > 0 && ls.set('corTrainerLayout', { // oculto (F8) = no guardar
+    saveTimer = setTimeout(() => frame.offsetWidth > 0 && ls.set('corTrainerLayout', { // hidden (F8) = do not save
       x: frame.offsetLeft, y: frame.offsetTop, w: frame.offsetWidth, h: frame.style.height ? frame.offsetHeight : undefined,
     }), 250)
   }
   window.__corTrainerRO = new ResizeObserver(saveLayout)
   window.__corTrainerRO.observe(frame)
-  // Que las teclas escritas en el panel no disparen atajos del juego (salvo F8).
+  // Keys typed in the panel must not trigger the game's shortcuts (except F8).
   frame.addEventListener('keydown', e => { if (e.key !== 'F8') e.stopPropagation() })
 
-  // Asas de redimensionado: 4 bordes + 4 esquinas. Sobresalen 4px hacia fuera
-  // para que sean fáciles de agarrar sin tapar el contenido.
+  // Resize handles: 4 edges + 4 corners. They stick out 4px
+  // so they are easy to grab without covering the content.
   const HANDLES = {
     n: 'top:-4px;left:10px;right:10px;height:8px;cursor:ns-resize',
     s: 'bottom:-4px;left:10px;right:10px;height:8px;cursor:ns-resize',
@@ -98,7 +98,7 @@ function build() {
     })
   }
 
-  // Cabecera: título (arrastrable) + botón de reinicio + banderas de idioma.
+  // Header: title (draggable) + reset button + language flags.
   const header = el('div', 'margin-bottom:6px', box)
   const titleLine = el('div', 'display:flex;align-items:baseline;gap:8px;cursor:move', header)
   titleLine.title = t('dragHint')
@@ -107,7 +107,7 @@ function build() {
   const hint = el('span', 'font-size:11px;opacity:.7', titleLine)
   hint.textContent = t('hideHint')
   const ICON_BTN = 'background:none;border:none;color:#e0c07a;cursor:pointer;padding:0 2px;font-size:14px'
-  // Plegar / desplegar todas las secciones y bloques a la vez.
+  // Collapse / expand all sections and blocks at once.
   for (const [icon, tip, folded] of [['⊟', 'collapseAll', true], ['⊞', 'expandAll', false]]) {
     const b = el('button', ICON_BTN, titleLine)
     b.textContent = icon
@@ -141,14 +141,14 @@ function build() {
     b.onclick = () => { if (!active) { i18n.setLang(code); build() } }
   }
 
-  // Secciones: tarjetas en una rejilla. Si el panel es ancho se reparten en
-  // varias columnas. Se pueden plegar (clic en el título) y reordenar
-  // (arrastrando la cabecera o con ▲▼). Plegado y orden se recuerdan.
+  // Sections: cards in a grid. If the panel is wide they are spread over
+  // several columns. They can be collapsed (click the title) and reordered
+  // (dragging the header or with ▲▼). Collapsed state and order are remembered.
   const grid = el('div', 'display:grid;grid-template-columns:minmax(0,1fr);column-gap:18px;align-items:start', box)
   const cards = {}
-  // Número de columnas = cuántas tarjetas normales caben (mín. 290px c/u), sin
-  // pasar del número de tarjetas: así no quedan columnas vacías a la derecha.
-  // (Las tarjetas a todo el ancho, como Propiedades, no cuentan.)
+  // Number of columns = how many normal cards fit (min. 290px each), without
+  // exceeding the number of cards: that way no empty columns are left on the right.
+  // (Full-width cards, like Properties, do not count.)
   const fitColumns = () => {
     const normal = Object.values(cards).filter(c => c.style.gridColumn !== '1 / -1').length || 1
     const fit = Math.floor((grid.clientWidth + COL_GAP) / (COL_MIN + COL_GAP)) || 1
@@ -158,7 +158,7 @@ function build() {
   window.__corTrainerGridRO = new ResizeObserver(fitColumns)
   window.__corTrainerGridRO.observe(grid)
   const collapsed = ls.get('corTrainerCollapsedV2', {})
-  // Orden guardado; una sección nueva va detrás de la que la precede por defecto.
+  // Saved order; a new section goes after the one that precedes it by default.
   const order = (ls.get('corTrainerOrder', null) || []).filter(id => SECTION_IDS.includes(id))
   SECTION_IDS.forEach((id, i) => { if (!order.includes(id)) order.splice(i ? order.indexOf(SECTION_IDS[i - 1]) + 1 : 0, 0, id) })
   const applyOrder = () => order.forEach(id => cards[id] && grid.appendChild(cards[id]))
@@ -202,13 +202,13 @@ function build() {
     return body
   }
 
-  // Cada sección construye su contenido. Si una falla (p. ej. tras una
-  // actualización del juego), las demás siguen funcionando.
+  // Each section builds its content. If one fails (e.g. after a
+  // game update), the others keep working.
   for (const f of FEATURES) {
     const body = section(f.id)
     if (f.fullWidth) cards[f.id].style.gridColumn = '1 / -1'
     try { f.build({ body, ui }) } catch (e) {
-      console.warn('[trainer] error en la sección ' + f.id, e)
+      console.warn('[stemma] error in section ' + f.id, e)
       ui.note(body, t('notAvailable'))
     }
   }

@@ -1,8 +1,8 @@
-// Acciones de los mods (Play As, Divorce, Give For Adoption, New Dynasty?, Play a
-// Scenario) hechas con la API de mods del juego sin activar el modo mods (game.DA).
-// Las usan el panel (features/extras) y los botones dentro del juego (extras/ingame).
-// Los costos no se cobran aquí: el panel los cobra con charge() y las ventanas del
-// juego con sus statChanges, que el juego aplica igual que en el mod.
+// Actions of the mods (Play As, Divorce, Give For Adoption, New Dynasty?, Play a
+// Scenario) done with the game's mods API without turning mod mode on (game.DA).
+// Used by the panel (features/extras) and the in-game buttons (extras/ingame).
+// Costs are not charged here: the panel charges them with charge() and the game's
+// windows with their statChanges, which the game applies just as in the mod.
 const { t } = require('core/i18n')
 const ls = require('core/storage')
 const game = require('game')
@@ -10,44 +10,44 @@ const SCENARIOS = require('extras/scenarios')
 
 const COSTS_KEY = 'corTrainerExtrasCosts'
 const HERITAGES = ['roman_plebian', 'roman_novus_homo', 'roman_patrician', 'roman_freedman']
-// Costos de los mods (applyStatChanges [2ee0]: × factor de clase; scaleByRevenue además × ingresos).
+// Costs of the mods (applyStatChanges [2ee0]: × class factor; scaleByRevenue also × income).
 const ADOPT_COST = { cash: -50, prestige: -100, influence: -500 }
 const DIVORCE_COST = { cash: -500, prestige: -25, influence: -300, scaleByRevenue: ['cash'] }
-// Causa de muerte del mod: el juego la muestra dentro de su frase en inglés
-// ("<nombre> has died <causa> at the age of <edad>").
+// The mod's cause of death: the game shows it inside its English sentence
+// ("<name> has died <cause> at the age of <age>").
 const ADOPT_CAUSE = '...maybe, who knows?, after being given up for adoption'
 
 const api = () => game.DA.api()
 const S = () => game.S()
 const store = () => game.store()
 
-// --- Costos -------------------------------------------------------------------------
+// --- Costs -------------------------------------------------------------------------
 const costsOn = () => ls.get(COSTS_KEY, true)
 const setCostsOn = v => ls.set(COSTS_KEY, !!v)
-// Lo que cobra el juego de verdad (con el escalado de tu partida).
+// What the game really charges (with your game's scaling).
 const real = (changes, k) => game.STATS ? game.STATS.real(k, changes[k], (changes.scaleByRevenue || []).includes(k)) : changes[k]
 const costText = changes => !costsOn() ? t('xFree') : ['cash', 'prestige', 'influence'].filter(k => changes[k])
   .map(k => Math.round(real(changes, k)).toLocaleString() + ' ' + t(k).toLowerCase()).join(', ')
-// Aviso si el costo deja el dinero en negativo (el juego tiene eventos de deudas).
+// Warning if the cost leaves the money negative (the game has debt events).
 const shortOf = changes => costsOn() && S().current.cash + real(changes, 'cash') < 0 ? '\n\n' + t('xNotEnough') : ''
 const charge = changes => { if (costsOn()) api().applyStatChanges(changes) }
-// statChanges para una opción de ventana del juego ({} si no se cobra).
+// statChanges for a game window option ({} if nothing is charged).
 const statChanges = changes => costsOn() ? { ...changes } : {}
 
-// --- Personajes ---------------------------------------------------------------------
+// --- Characters ---------------------------------------------------------------------
 const name = ch => {
   const d = S().dynasties[ch.dynastyId] || {}
   return [ch.praenomen, d.nomen, d.cognomen, ch.agnomen].filter(s => s && s.trim()).join(' ')
 }
-// Enlace a un personaje en los mensajes del juego.
+// Link to a character in the game's messages.
 const link = ch => '[c|' + ch.id + '|' + name(ch) + ']'
 const spouseOf = ch => { const sp = ch && S().characters[ch.spouseId]; return sp && !sp.isDead ? sp : null }
 const inHousehold = ch => game.household().includes(ch)
 
 const canPlayAs = ch => !!ch && !ch.isDead && ch.id !== S().current.id
-// Como el mod: miembro de la casa con pareja viva.
+// Like the mod: household member with a living spouse.
 const canDivorce = ch => !!ch && !ch.isDead && !!spouseOf(ch) && inHousehold(ch)
-// Como el mod: de la casa, hasta 15 años, sin pareja y sin estar ocupado ni de viaje.
+// Like the mod: in the household, up to 15 years old, with no spouse and neither busy nor traveling.
 const canAdopt = ch => !!ch && !ch.isDead && ch.id !== S().current.id && inHousehold(ch) &&
   !ch.spouseId && !ch.flagIsBusy && !ch.flagIsAway && game.ageOf(ch) <= 15
 
@@ -73,10 +73,10 @@ function adopt(id) {
   return true
 }
 
-// --- Nueva dinastía -----------------------------------------------------------------
-// El mod original renombra la dinastía para todos sus miembros (copia su id). Aquí
-// se hace lo que promete: una rama nueva, con el mismo prestigio, para el jugador
-// y sus descendientes que llevan su apellido; el resto de la familia lo conserva.
+// --- New dynasty -----------------------------------------------------------------
+// The original mod renames the dynasty for all its members (it copies its id). Here
+// it does what it promises: a new branch, with the same prestige, for the player
+// and their descendants who carry their surname; the rest of the family keeps theirs.
 function branchDynasty({ nomen, cognomen, heritage }) {
   const s = S(), old = game.dynasty(), id = game.DA.newId()
   nomen = (nomen || '').trim()
@@ -96,13 +96,13 @@ function branchDynasty({ nomen, cognomen, heritage }) {
   return moved.length
 }
 
-// --- Escenarios ---------------------------------------------------------------------
+// --- Scenarios ---------------------------------------------------------------------
 function playScenario(scId) {
   const sc = SCENARIOS.list.find(x => x.id === scId)
   if (!sc) return false
   const data = sc.data(), a = api(), s = S()
   a.setDate(data.date)
-  // Como el mod: se crean los personajes y luego se enlazan con sus ids reales.
+  // Like the mod: the characters are created and then linked with their real ids.
   const ids = {}
   for (const tmp in data.characters) {
     ids[tmp] = a.generateCharacter({ characterFeatures: { ...data.characters[tmp] }, dynastyFeatures: data.dynasties[data.characters[tmp].dynastyId] })
@@ -117,7 +117,7 @@ function playScenario(scId) {
   }
   a.setCurrentCharacter({ characterId: ids[data.characterId] })
   a.setGlobalFlag({ flag: 'playingScenario', data: sc.id })
-  // Dinero, influencia y propiedades quedan en los valores del escenario.
+  // Money, influence and properties are left at the scenario's values.
   s.current.cash = data.cash
   s.current.influence = data.influence
   const det = s.current.propertyDetails
@@ -127,8 +127,8 @@ function playScenario(scId) {
 }
 const scenarioYear = scId => SCENARIOS.list.find(x => x.id === scId)?.data().date.year
 
-// Evento del escenario de Agrippa (marry_attica): a los 25½–26½ años, si no está
-// casado, puede casarse con Attica o negarse, con premios y castigos del mod.
+// Agrippa scenario event (marry_attica): at 25½–26½ years old, if not
+// married, he can marry Attica or refuse, with the mod's rewards and punishments.
 const atticaDue = () => {
   const p = game.player()
   if (!p?.flagPlayScenarioModIsMarcusAgrippa || p.modFlags?.marcus_attica_engagement_over) return false
@@ -141,7 +141,7 @@ const atticaChanges = yes => {
     : { prestige: -500 / f, influence: -2000 / f }
 }
 const atticaDone = () => api().setCharacterFlag({ characterId: S().current.id, flag: 'marcus_attica_engagement_over', data: true })
-// La boda (los premios y castigos los aplica quien llama).
+// The wedding (the rewards and punishments are applied by the caller).
 function atticaWedding() {
   const a = api(), id = a.generateCharacter(SCENARIOS.attica())
   a.performMarriage({ characterId: S().current.id, spouseId: id, isMatrilineal: false })

@@ -1,9 +1,9 @@
-// Extras: lo que hacen los mods de ejemplo del juego (Give For Adoption, New
-// Dynasty?, Play As, Divorce, Play a Scenario), los temas de color del mod "theme"
-// la casamentera (basada en coemptio de peritiSumus) y las finanzas romanas, desde el
-// panel y con botones dentro del juego (extras/ingame). Se usa
-// la API de mods del juego sin activar el modo mods, así que los logros del juego y
-// de Steam siguen activos. Los costos son los de los mods y se pueden desactivar.
+// Extras: what the game's example mods do (Give For Adoption, New
+// Dynasty?, Play As, Divorce, Play a Scenario), the color themes of the "theme" mod,
+// the matchmaker (based on peritiSumus's coemptio) and Roman finance, from the
+// panel and with buttons inside the game (extras/ingame). It uses
+// the game's mods API without turning mod mode on, so the game's and
+// Steam's achievements stay active. The costs are the mods' and can be turned off.
 const { el, CTRL_CSS } = require('core/dom')
 const { t } = require('core/i18n')
 const game = require('game')
@@ -45,16 +45,16 @@ module.exports = {
     checkbox(body, t('xCosts'), A.costsOn(), A.setCostsOn)
     ui.note(body, t('xNote'))
 
-    // --- Botones en el juego ------------------------------------------------------
+    // --- Buttons in the game ------------------------------------------------------
     const gameBox = ui.group(body, t('xInGame'), 'extras.inGame')
     const gameGrid = el('div', 'display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));column-gap:8px', gameBox)
     const TITLES = { theme: 'xTheme', playAs: 'xPlayAs', divorce: 'xDivorce', adopt: 'xAdopt', dynasty: 'xDynasty', scenario: 'xScenario', bank: 'finTitle', matchmaker: 'xMatchmaker', province: 'provFeature' }
     for (const f of INGAME.FEATURES) checkbox(gameGrid, t(TITLES[f]), INGAME.enabled(f), v => INGAME.setEnabled(f, v))
     ui.note(gameBox, t('xInGameNote'))
-    // Pone o quita los botones del juego en cada refresco (solo toca lo que cambia).
+    // Adds or removes the in-game buttons on every refresh (it only touches what changes).
     ui.onRefresh(() => INGAME.sync())
 
-    // --- Tema ---------------------------------------------------------------------
+    // --- Theme ---------------------------------------------------------------------
     const themeBox = ui.group(body, t('xTheme'), 'extras.theme')
     const theme = pickRow(themeBox)
     for (const id of ['', ...Object.keys(THEMES.LIST)]) {
@@ -66,15 +66,15 @@ module.exports = {
     const dark = ui.button(theme.line, '', () => store().dispatch('toggleSetting', { setting: 'darkMode' }), t('xDarkModeTip'))
     ui.onRefresh(() => {
       dark.textContent = '☾ ' + t('xDarkMode') + (S()?.settings?.darkMode ? ' ✓' : '')
-      // El tema también se puede cambiar desde el botón del juego.
+      // The theme can also be changed from the in-game button.
       if (document.activeElement !== theme.s) theme.s.value = THEMES.current()
     })
     ui.note(themeBox, t('xThemeNote'))
 
-    // --- Jugar como ---------------------------------------------------------------
+    // --- Play as ---------------------------------------------------------------
     const playBox = ui.group(body, t('xPlayAs'), 'extras.playAs')
     let playId = null, house = new Set()
-    // Todos los vivos: primero los de la casa, luego el resto (parientes, etc.).
+    // Everyone alive: household members first, then the rest (relatives, etc.).
     const playable = () => {
       const s = S()
       if (!s) return []
@@ -91,10 +91,10 @@ module.exports = {
     })
     ui.note(playBox, t('xPlayAsNote'))
 
-    // --- Divorcio -----------------------------------------------------------------
+    // --- Divorce -----------------------------------------------------------------
     const divBox = ui.group(body, t('xDivorce'), 'extras.divorce')
     let divId = null
-    // Una entrada por pareja de la casa.
+    // One entry per household couple.
     const couples = () => {
       const seen = new Set()
       return game.household().filter(ch => {
@@ -116,7 +116,7 @@ module.exports = {
     const divCost = ui.note(divBox, '')
     ui.onRefresh(() => { divCost.textContent = t('xCost') + ': ' + A.costText(A.DIVORCE_COST) })
 
-    // --- Dar en adopción ----------------------------------------------------------
+    // --- Give for adoption ----------------------------------------------------------
     const adoptBox = ui.group(body, t('xAdopt'), 'extras.adopt')
     let adoptId = null
     const adopt = pickRow(adoptBox)
@@ -131,7 +131,7 @@ module.exports = {
     const adoptCost = ui.note(adoptBox, '')
     ui.onRefresh(() => { adoptCost.textContent = t('xCost') + ': ' + A.costText(A.ADOPT_COST) + '. ' + t('xAdoptNote') })
 
-    // --- Nueva dinastía -----------------------------------------------------------
+    // --- New dynasty -----------------------------------------------------------
     const dynBox = ui.group(body, t('xDynasty'), 'extras.dynasty')
     const field = (label, ph) => {
       const line = el('div', 'display:flex;gap:4px;align-items:center;margin:2px 0', dynBox)
@@ -145,7 +145,7 @@ module.exports = {
     el('span', 'width:92px;flex-shrink:0', herLine).textContent = t('xHeritage')
     const heritage = el('select', CTRL_CSS + ';flex:1;min-width:0;padding:2px', herLine)
     for (const h of A.HERITAGES) { const o = el('option', '', heritage); o.value = h; o.textContent = t('xH_' + h) }
-    // Los campos muestran tu dinastía actual hasta que los cambies.
+    // The fields show your current dynasty until you change them.
     let dynSig = ''
     ui.onRefresh(() => {
       const d = game.dynasty()
@@ -166,7 +166,7 @@ module.exports = {
     })
     ui.note(dynBox, t('xDynastyNote'))
 
-    // --- Escenarios ---------------------------------------------------------------
+    // --- Scenarios ---------------------------------------------------------------
     const scnBox = ui.group(body, t('xScenario'), 'extras.scenario')
     const scn = pickRow(scnBox)
     for (const sc of SCENARIOS.list) { const o = el('option', '', scn.s); o.value = sc.id; o.textContent = t('scn_' + sc.id) }
@@ -180,8 +180,8 @@ module.exports = {
     })
     ui.note(scnBox, t('xScenarioNote'))
 
-    // Boda con Attica (escenario de Agrippa). Con el botón de escenarios activado en el
-    // juego, aparece como ventana del juego; si no, aquí.
+    // Wedding with Attica (Agrippa scenario). With the scenarios button turned on in the
+    // game, it appears as a game window; otherwise, here.
     const attica = el('div', 'display:none;margin-top:6px;padding:4px 6px;border:1px solid #5a4630;border-radius:6px', scnBox)
     el('div', '', attica).textContent = t('xAttica')
     const atticaBtns = el('div', 'display:flex;gap:4px;margin-top:4px;flex-wrap:wrap', attica)
@@ -196,9 +196,9 @@ module.exports = {
     ui.button(atticaBtns, t('xAtticaNo'), () => atticaDecide(false))
     ui.onRefresh(() => { attica.style.display = !INGAME.enabled('scenario') && A.atticaDue() ? '' : 'none' })
 
-    // --- Argentarius (banco e inversiones) ----------------------------------------
-    // Las operaciones se hacen en la ventana del juego; aquí se ve lo que tu clase y tus
-    // atributos permiten, tu deuda (con pagos rápidos) y tus inversiones.
+    // --- Argentarius (bank and investments) ----------------------------------------
+    // Operations are done in the game window; here you see what your class and
+    // attributes allow, your debt (with quick payments) and your investments.
     const finBox = ui.group(body, t('finTitle'), 'extras.finance')
     const finInfo = el('div', 'font-size:12px;line-height:1.5;margin:2px 0', finBox)
     const finBtns = el('div', 'display:flex;gap:4px;flex-wrap:wrap;margin:4px 0', finBox)
@@ -215,11 +215,11 @@ module.exports = {
       line(t('finPanelClass', { cls }) + (px ? ' · ' + t('finPanelProxy', { commission: pct(px.commission) }) : ''))
       line(t('finPanelBank', { rate: pct(FIN.bankRate()), limit: fmt(FIN.bankLimit()) }))
       line(t('finPanelAvail', { lend: avail('lend'), shares: avail('shares'), sea: avail('sea') }))
-      // Tope de efectivo del juego (lo que pasa se pierde) y lo que hay en el templo.
+      // The game's cash cap (what goes over is lost) and what is in the temple.
       const cap = FIN.cashCap(), excess = FIN.excessCash()
       line(t('finPanelCap', { cap: Number.isFinite(cap) ? fmt(cap) : '∞', deposit: fmt(FIN.deposited()) }) + (excess > 0 ? ' · ' + t('finPanelExcess', { excess: fmt(excess) }) : ''))
       line(t('finPanelGrain', { price: FIN.grainPrice().toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }), stock: fmt(FIN.grain().modii) }) + (FIN.famine() ? ' · ' + t('finGrainFamineShort') : ''))
-      // Valor de cada atributo y, por debajo de 20, su penalización.
+      // Value of each attribute and, below 20, its penalty.
       const sk = k => { const p = FIN.penalty(k); return Math.round(FIN.skillValue(k)) + (p < 1 ? ' (×' + p.toFixed(2) + ')' : '') }
       line(t('finPanelSkills', { stew: sk('stewardship'), elo: sk('eloquence'), int: sk('intelligence'), com: sk('combat') }))
       const provs = PROV.list()
@@ -229,7 +229,7 @@ module.exports = {
       finSig = now
       finBtns.innerHTML = ''
       ui.button(finBtns, t('finOpen'), () => INGAME.openFinance(), t('finOpenTip'))
-      // Pagos anticipados de la deuda: sin interés (solo se cobra en Martius).
+      // Early debt payments: no interest (it is only charged in Martius).
       if (debt > 0) for (const n of new Set([1000, 5000, debt])) {
         if (n > debt) continue
         ui.button(finBtns, n === debt ? t('finPayOff', { amount: fmt(debt) }) : t('finPay', { amount: fmt(n) }), () => {
@@ -253,10 +253,10 @@ module.exports = {
       if (!finList.children.length) item(t('finPfEmpty'))
     })
 
-    // --- Casamentera --------------------------------------------------------------
+    // --- Matchmaker --------------------------------------------------------------
     const mmBox = ui.group(body, t('xMatchmaker'), 'extras.matchmaker')
-    // Se usa desde la ventana "Arrange Betrothal" del juego; aquí se ven los candidatos
-    // encargados que siguen disponibles, con sus habilidades y rasgos.
+    // Used from the game's "Arrange Betrothal" window; here you see the ordered candidates
+    // that are still available, with their skills and traits.
     ui.note(mmBox, t('xMmNote'))
     const mmList = el('div', 'margin-top:4px', mmBox)
     let mmSig = ''

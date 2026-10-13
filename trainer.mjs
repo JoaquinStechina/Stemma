@@ -1,2 +1,2 @@
-// Atajo del nombre anterior: `node trainer.mjs` sigue funcionando. Usa `node stemma.mjs`.
+// Shortcut for the old name: `node trainer.mjs` still works. Use `node stemma.mjs`.
 import './stemma.mjs'

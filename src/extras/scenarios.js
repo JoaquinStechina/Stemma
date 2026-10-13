@@ -1,18 +1,18 @@
-// Escenarios del mod "Play a Scenario" de los mods de ejemplo oficiales:
+// Scenarios of the "Play a Scenario" mod from the official example mods:
 // github.com/CitizenOfRomeDynastyAscendant/example-mods (mods/play_scenario).
 // Software: Citizen Of Rome - Dynasty Ascendant; Example Mods.
-// Licensor: Sathvik Software Solutions. Licencia: CC BY-NC-SA 4.0
-// (https://creativecommons.org/licenses/by-nc-sa/4.0/) con la condición
-// "Commons Clause" v1.0: no se concede el derecho a venderlo.
+// Licensor: Sathvik Software Solutions. License: CC BY-NC-SA 4.0
+// (https://creativecommons.org/licenses/by-nc-sa/4.0/) with the
+// "Commons Clause" v1.0 condition: the right to sell it is not granted.
 //
-// Los datos son los del mod; solo cambia la forma: cada escenario es una función
-// para que las habilidades al azar se tiren de nuevo en cada partida. El título y
-// la descripción están en locales/*.json (scn_<id> y scn_<id>_info).
+// The data is the mod's; only the form changes: each scenario is a function
+// so random skills are rolled anew in each game. The title and the
+// description are in locales/*.json (scn_<id> and scn_<id>_info).
 
-// Habilidad al azar: base + 0..10.
+// Random skill: base + 0..10.
 const r = (base = 0) => Math.round(Math.random() * 10) + base
 const skills = (i, s, e, c) => ({ intelligence: r(i), stewardship: r(s), eloquence: r(e), combat: r(c) })
-// Hijos que empiezan estudiando en un ludus privado.
+// Children who start studying at a private ludus.
 const ludus = () => ({
   flagIsBusy: true, flagAttendingLudus: 'private',
   actions: { beginLudusEducation: { isAvailable: false }, endLudusEducation: { isAvailable: false } },
@@ -167,8 +167,8 @@ const antony = () => {
   }
 }
 
-// Evento del escenario de Agrippa (marry_attica): a los 25½–26½ años, si no está
-// casado, puede casarse con Attica (o negarse, con una penalización).
+// Agrippa scenario event (marry_attica): at 25½–26½ years old, if not
+// married, he can marry Attica (or refuse, with a penalty).
 const attica = () => ({
   characterFeatures: {
     isDead: false, isMale: false, praenomen: 'Attica', agnomen: '', birthMonth: 3, birthYear: 695,
